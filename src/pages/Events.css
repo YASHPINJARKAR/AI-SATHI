@@ -1,0 +1,141 @@
+/* ===== Events Page ===== */
+.events-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.events-header h1 {
+  font-family: var(--font-primary);
+  font-size: 1.8rem;
+  font-weight: 800;
+}
+
+.events-header p {
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.events-header-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.events-search {
+  position: relative;
+  margin-bottom: var(--space-md);
+}
+
+.events-categories {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xl);
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.events-categories::-webkit-scrollbar { height: 0; }
+
+/* Events Grid */
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: var(--space-lg);
+}
+
+.event-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+
+.event-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg);
+  background: var(--bg-tertiary);
+}
+
+.event-icon-large {
+  font-size: 2.5rem;
+}
+
+.event-price {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: var(--font-primary);
+}
+
+.event-price.free {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.event-price.paid {
+  background: var(--accent-glow);
+  color: var(--accent);
+}
+
+.event-card-body {
+  padding: var(--space-lg);
+  flex: 1;
+}
+
+.event-title {
+  font-family: var(--font-primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.event-title-marathi {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-sm);
+}
+
+.event-description {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-md);
+}
+
+.event-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.event-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.event-card-footer {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid var(--border-light);
+}
+
+@media (max-width: 768px) {
+  .events-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .events-header h1 {
+    font-size: 1.4rem;
+  }
+}
