@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Search, ChevronDown, ChevronUp, FileText, MapPin, Clock, CheckCircle, ExternalLink } from 'lucide-react';
 import { governmentServices } from '../data/mockData';
+import { useLanguage } from '../LanguageContext';
 import './Services.css';
 
 const serviceCategories = [
@@ -16,6 +17,7 @@ const serviceCategories = [
 ];
 
 export default function Services() {
+  const { language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [expandedId, setExpandedId] = useState(null);
@@ -31,8 +33,7 @@ export default function Services() {
     <div className="page-container services-page">
       <div className="services-header animate-fade-in-down">
         <div>
-          <h1>Government & Public Services</h1>
-          <p className="marathi-text">सरकारी आणि सार्वजनिक सेवा • Amravati</p>
+          <h1>{language === 'mr' ? 'सरकारी आणि सार्वजनिक सेवा' : 'Government & Public Services'}</h1>
         </div>
       </div>
 
@@ -42,7 +43,7 @@ export default function Services() {
         <input
           type="text"
           className="search-input"
-          placeholder="Search schemes, services... / योजना शोधा..."
+          placeholder={language === 'mr' ? "योजना शोधा..." : "Search schemes, services..."}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           id="services-search"
@@ -74,8 +75,7 @@ export default function Services() {
             <div className="service-card-header" onClick={() => setExpandedId(expandedId === service.id ? null : service.id)}>
               <div className="service-icon">{service.icon}</div>
               <div className="service-info">
-                <h3>{service.name}</h3>
-                <p className="service-name-marathi marathi-text">{service.nameMarathi}</p>
+                <h3>{language === 'mr' ? service.nameMarathi : service.name}</h3>
                 <p className="service-desc">{service.description}</p>
               </div>
               <button className="service-expand-btn">
@@ -87,13 +87,13 @@ export default function Services() {
               <div className="service-details animate-fade-in-up">
                 {/* Eligibility */}
                 <div className="service-detail-section">
-                  <h4><CheckCircle size={16} /> Eligibility / पात्रता</h4>
+                  <h4><CheckCircle size={16} /> {language === 'mr' ? 'पात्रता' : 'Eligibility'}</h4>
                   <p>{service.eligibility}</p>
                 </div>
 
                 {/* Documents */}
                 <div className="service-detail-section">
-                  <h4><FileText size={16} /> Required Documents / आवश्यक कागदपत्रे</h4>
+                  <h4><FileText size={16} /> {language === 'mr' ? 'आवश्यक कागदपत्रे' : 'Required Documents'}</h4>
                   <ul className="doc-list">
                     {service.documents.map((doc, i) => (
                       <li key={i}>{doc}</li>
@@ -103,7 +103,7 @@ export default function Services() {
 
                 {/* Steps */}
                 <div className="service-detail-section">
-                  <h4>📝 How to Apply / अर्ज कसा करावा</h4>
+                  <h4>📝 {language === 'mr' ? 'अर्ज कसा करावा' : 'How to Apply'}</h4>
                   <ol className="steps-list">
                     {service.steps.map((step, i) => (
                       <li key={i}>
@@ -126,11 +126,27 @@ export default function Services() {
                   <div className="service-meta-card">
                     <Clock size={16} />
                     <div>
-                      <span className="meta-label">Timeline</span>
+                      <span className="meta-label">{language === 'mr' ? 'कालावधी' : 'Timeline'}</span>
                       <span className="meta-value">{service.timeline}</span>
                     </div>
                   </div>
                 </div>
+
+                {/* Official Link */}
+                {service.officialLink && (
+                  <div style={{ marginTop: '16px' }}>
+                    <a 
+                      href={service.officialLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="btn btn-outline"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                    >
+                      <ExternalLink size={16} />
+                      {language === 'mr' ? 'अधिकृत वेबसाइटला भेट द्या' : 'Visit Official Website'}
+                    </a>
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Calendar, MapPin, Users, Clock, Filter, Search, Tag } from 'lucide-react';
 import { events } from '../data/mockData';
+import { useLanguage } from '../LanguageContext';
 import './Events.css';
 
 const eventCategories = [
@@ -14,6 +15,7 @@ const eventCategories = [
 ];
 
 export default function Events() {
+  const { language } = useLanguage();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -28,12 +30,11 @@ export default function Events() {
     <div className="page-container events-page">
       <div className="events-header animate-fade-in-down">
         <div>
-          <h1>Events & Activities</h1>
-          <p className="marathi-text">कार्यक्रम आणि उपक्रम • Amravati</p>
+          <h1>{language === 'mr' ? 'कार्यक्रम आणि उपक्रम' : 'Events & Activities'}</h1>
         </div>
         <div className="events-header-badge badge badge-accent">
           <Calendar size={14} />
-          {filtered.length} Events
+          {filtered.length} {language === 'mr' ? 'कार्यक्रम' : 'Events'}
         </div>
       </div>
 
@@ -77,8 +78,7 @@ export default function Events() {
                 <Tag size={10} />
                 {evt.category.charAt(0).toUpperCase() + evt.category.slice(1)}
               </span>
-              <h3 className="event-title">{evt.title}</h3>
-              <p className="event-title-marathi marathi-text">{evt.titleMarathi}</p>
+              <h3 className="event-title">{language === 'mr' ? evt.titleMarathi : evt.title}</h3>
               <p className="event-description">{evt.description}</p>
               <div className="event-meta-grid">
                 <div className="event-meta-item">
@@ -95,13 +95,13 @@ export default function Events() {
                 </div>
                 <div className="event-meta-item">
                   <Users size={14} />
-                  <span>{evt.attendees}+ Attendees</span>
+                  <span>{evt.attendees}+ {language === 'mr' ? 'उपस्थित' : 'Attendees'}</span>
                 </div>
               </div>
             </div>
             <div className="event-card-footer">
-              <button className="btn btn-accent btn-sm" style={{ flex: 1 }}>Register Now</button>
-              <button className="btn btn-outline btn-sm">Share</button>
+              <button className="btn btn-accent btn-sm" style={{ flex: 1 }}>{language === 'mr' ? 'नोंदणी करा' : 'Register Now'}</button>
+              <button className="btn btn-outline btn-sm">{language === 'mr' ? 'शेअर करा' : 'Share'}</button>
             </div>
           </div>
         ))}

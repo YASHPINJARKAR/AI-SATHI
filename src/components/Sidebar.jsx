@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, MessageCircle, Building2, Calendar, Landmark,
-  MapPin, ChevronLeft, ChevronRight, Sun, Moon, Menu, X, Mic
+  MapPin, ChevronLeft, ChevronRight, Sun, Moon, Menu, X, Mic, Globe
 } from 'lucide-react';
+import { useLanguage } from '../LanguageContext';
+import { useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 
 const navItems = [
@@ -17,6 +19,8 @@ const navItems = [
 
 export default function Sidebar({ collapsed, setCollapsed, darkMode, setDarkMode }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { language, toggleLanguage } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -36,14 +40,16 @@ export default function Sidebar({ collapsed, setCollapsed, darkMode, setDarkMode
       <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`} id="main-sidebar">
         {/* Header / Brand */}
         <div className="sidebar-header">
-          <div className="brand">
+          <div className="brand" onClick={() => navigate(-1)} style={{ cursor: 'pointer' }}>
             <div className="brand-icon">
               <span className="brand-emoji">🤖</span>
             </div>
             {!collapsed && (
               <div className="brand-text">
                 <h1 className="brand-name">Ai Sathi</h1>
-                <span className="brand-tagline marathi-text">अमरावती सहाय्यक</span>
+                <span className="brand-tagline marathi-text">
+                  {language === 'mr' ? 'अमरावती सहाय्यक' : 'Amravati Guide'}
+                </span>
               </div>
             )}
           </div>
@@ -67,8 +73,7 @@ export default function Sidebar({ collapsed, setCollapsed, darkMode, setDarkMode
                   </span>
                   {!collapsed && (
                     <div className="nav-label-group">
-                      <span className="nav-label">{item.label}</span>
-                      <span className="nav-label-marathi marathi-text">{item.labelMarathi}</span>
+                      <span className="nav-label">{language === 'mr' ? item.labelMarathi : item.label}</span>
                     </div>
                   )}
                   {!collapsed && (
@@ -82,10 +87,16 @@ export default function Sidebar({ collapsed, setCollapsed, darkMode, setDarkMode
 
         {/* Footer */}
         <div className="sidebar-footer">
+          {/* Language Toggle */}
+          <button className="theme-toggle" onClick={toggleLanguage} id="lang-toggle">
+            <Globe size={18} />
+            {!collapsed && <span>{language === 'mr' ? 'English' : 'मराठी'}</span>}
+          </button>
+
           {/* Voice Button */}
           <button className="sidebar-voice-btn" id="sidebar-voice-btn" title="Voice Assistant">
             <Mic size={18} />
-            {!collapsed && <span>Voice / आवाज</span>}
+            {!collapsed && <span>{language === 'mr' ? 'आवाज' : 'Voice'}</span>}
           </button>
 
           {/* Theme Toggle */}

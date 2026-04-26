@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { Search, Navigation, Star, MapPin, Phone, Clock, Layers } from 'lucide-react';
 import { businesses, categories } from '../data/mockData';
+import { useLanguage } from '../LanguageContext';
 import './MapPage.css';
 
 // Fix for default marker icons in react-leaflet
@@ -24,6 +25,7 @@ function FlyToMarker({ position }) {
 }
 
 export default function MapPage() {
+  const { language } = useLanguage();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBiz, setSelectedBiz] = useState(null);
@@ -63,15 +65,14 @@ export default function MapPage() {
         {/* Sidebar Panel */}
         <div className="map-panel">
           <div className="map-panel-header">
-            <h2>Explore Amravati</h2>
-            <p className="marathi-text">अमरावती नकाशा</p>
+            <h2>{language === 'mr' ? 'अमरावती नकाशा' : 'Explore Amravati'}</h2>
           </div>
 
           <div className="map-search">
             <Search size={18} className="search-icon" />
             <input
               type="text"
-              placeholder="Search places... / ठिकाणे शोधा..."
+              placeholder={language === 'mr' ? "ठिकाणे शोधा..." : "Search places..."}
               className="search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -87,13 +88,13 @@ export default function MapPage() {
                 onClick={() => setActiveCategory(cat.id)}
               >
                 <span>{cat.icon}</span>
-                <span>{cat.label}</span>
+                <span>{language === 'mr' ? cat.labelMarathi || cat.label : cat.label}</span>
               </button>
             ))}
           </div>
 
           <div className="map-results">
-            <p className="map-results-count">{filtered.length} places found</p>
+            <p className="map-results-count">{filtered.length} {language === 'mr' ? 'ठिकाणे सापडली' : 'places found'}</p>
             {filtered.map(biz => (
               <div
                 key={biz.id}
@@ -102,11 +103,13 @@ export default function MapPage() {
               >
                 <div className="map-result-icon">{biz.image}</div>
                 <div className="map-result-info">
-                  <h4>{biz.name}</h4>
+                  <h4>{language === 'mr' ? biz.nameMarathi : biz.name}</h4>
                   <div className="map-result-meta">
                     <span><Star size={11} fill="currentColor" /> {biz.rating}</span>
                     <span><MapPin size={11} /> {biz.distance}</span>
-                    <span className={`status-dot ${biz.isOpen ? 'open' : 'closed'}`}>{biz.isOpen ? 'Open' : 'Closed'}</span>
+                    <span className={`status-dot ${biz.isOpen ? 'open' : 'closed'}`}>
+                      {biz.isOpen ? (language === 'mr' ? 'उघडे आहे' : 'Open') : (language === 'mr' ? 'बंद आहे' : 'Closed')}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -131,16 +134,15 @@ export default function MapPage() {
               <Marker key={biz.id} position={[biz.lat, biz.lng]}>
                 <Popup>
                   <div className="map-popup">
-                    <h4>{biz.image} {biz.name}</h4>
-                    <p className="marathi-text">{biz.nameMarathi}</p>
-                    <p>⭐ {biz.rating} • {biz.distance} • {biz.isOpen ? '🟢 Open' : '🔴 Closed'}</p>
+                    <h4>{biz.image} {language === 'mr' ? biz.nameMarathi : biz.name}</h4>
+                    <p>⭐ {biz.rating} • {biz.distance} • {biz.isOpen ? '🟢 ' + (language === 'mr' ? 'उघडे आहे' : 'Open') : '🔴 ' + (language === 'mr' ? 'बंद आहे' : 'Closed')}</p>
                     <p>📍 {biz.address}</p>
                     {biz.phone && <p>📞 {biz.phone}</p>}
                     <button
                       className="popup-directions-btn"
                       onClick={() => openDirections(biz)}
                     >
-                      🧭 Get Directions
+                      🧭 {language === 'mr' ? 'दिशा मिळवा' : 'Get Directions'}
                     </button>
                   </div>
                 </Popup>

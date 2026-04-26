@@ -7,6 +7,7 @@ import Directory from './pages/Directory';
 import Events from './pages/Events';
 import Services from './pages/Services';
 import MapPage from './pages/MapPage';
+import { LanguageProvider } from './LanguageContext';
 import './App.css';
 
 function App() {
@@ -24,26 +25,35 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <div className="app-layout">
-        <Sidebar
-          collapsed={collapsed}
-          setCollapsed={setCollapsed}
-          darkMode={darkMode}
-          setDarkMode={setDarkMode}
-        />
-        <main className={`main-content ${collapsed ? 'collapsed' : ''}`}>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/chat" element={<Chat />} />
-            <Route path="/directory" element={<Directory />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/map" element={<MapPage />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+    <LanguageProvider>
+      <Router>
+        <div className="app-layout">
+          <Sidebar
+            collapsed={collapsed}
+            setCollapsed={setCollapsed}
+            darkMode={darkMode}
+            setDarkMode={setDarkMode}
+          />
+          <main 
+            className={`main-content ${collapsed ? 'collapsed' : ''}`}
+            onClick={() => {
+              if (!collapsed && window.innerWidth > 768) {
+                setCollapsed(true);
+              }
+            }}
+          >
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/chat" element={<Chat />} />
+              <Route path="/directory" element={<Directory />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/map" element={<MapPage />} />
+            </Routes>
+          </main>
+        </div>
+      </Router>
+    </LanguageProvider>
   );
 }
 

@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
 import { Search, Star, MapPin, Clock, Phone, Filter, ChevronDown, Navigation, ExternalLink } from 'lucide-react';
 import { businesses, categories } from '../data/mockData';
+import { useLanguage } from '../LanguageContext';
 import './Directory.css';
 
 export default function Directory() {
+  const { language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [sortBy, setSortBy] = useState('distance');
@@ -42,8 +44,10 @@ export default function Directory() {
       {/* Header */}
       <div className="directory-header animate-fade-in-down">
         <div>
-          <h1>Business Directory</h1>
-          <p className="marathi-text">व्यवसाय डिरेक्टरी • {filteredBusinesses.length} results</p>
+          <h1>{language === 'mr' ? 'व्यवसाय डिरेक्टरी' : 'Business Directory'}</h1>
+          <p className="marathi-text">
+            {filteredBusinesses.length} {language === 'mr' ? 'निकाल' : 'results'}
+          </p>
         </div>
       </div>
 
@@ -54,7 +58,7 @@ export default function Directory() {
           <input
             type="text"
             className="search-input"
-            placeholder="Search businesses, hospitals, restaurants... / शोधा..."
+            placeholder={language === 'mr' ? "व्यवसाय, रुग्णालये, रेस्टॉरंट्स शोधा..." : "Search businesses, hospitals, restaurants..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             id="directory-search"
@@ -70,7 +74,7 @@ export default function Directory() {
                 onClick={() => setActiveCategory(cat.id)}
               >
                 <span>{cat.icon}</span>
-                <span>{cat.label}</span>
+                <span>{language === 'mr' ? cat.labelMarathi || cat.label : cat.label}</span>
               </button>
             ))}
           </div>
@@ -83,9 +87,9 @@ export default function Directory() {
               onChange={(e) => setSortBy(e.target.value)}
               id="sort-select"
             >
-              <option value="distance">Nearest First</option>
-              <option value="rating">Highest Rated</option>
-              <option value="reviews">Most Reviewed</option>
+              <option value="distance">{language === 'mr' ? 'सर्वात जवळचे' : 'Nearest First'}</option>
+              <option value="rating">{language === 'mr' ? 'सर्वाधिक रेट केलेले' : 'Highest Rated'}</option>
+              <option value="reviews">{language === 'mr' ? 'सर्वाधिक पुनरावलोकने' : 'Most Reviewed'}</option>
             </select>
             <ChevronDown size={14} />
           </div>
@@ -103,11 +107,12 @@ export default function Directory() {
             <div className="biz-card-header">
               <div className="biz-icon">{biz.image}</div>
               <div className="biz-info">
-                <h3 className="biz-name">{biz.name}</h3>
-                <p className="biz-name-marathi marathi-text">{biz.nameMarathi}</p>
+                <h3 className="biz-name">{language === 'mr' ? biz.nameMarathi : biz.name}</h3>
               </div>
               <span className={`biz-status ${biz.isOpen ? 'open' : 'closed'}`}>
-                {biz.isOpen ? 'Open' : 'Closed'}
+                {biz.isOpen 
+                  ? (language === 'mr' ? 'उघडे आहे' : 'Open') 
+                  : (language === 'mr' ? 'बंद आहे' : 'Closed')}
               </span>
             </div>
 
