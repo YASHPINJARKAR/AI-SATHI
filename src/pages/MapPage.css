@@ -219,6 +219,9 @@
 }
 
 @media (max-width: 1024px) {
+  .map-page {
+    height: calc(100vh - 130px); /* 60px top + 70px bottom */
+  }
   .map-layout {
     flex-direction: column;
   }

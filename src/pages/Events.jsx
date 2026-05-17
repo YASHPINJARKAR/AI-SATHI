@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Calendar, MapPin, Users, Clock, Filter, Search, Tag } from 'lucide-react';
 import { events } from '../data/mockData';
 import { useLanguage } from '../LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import './Events.css';
 
 const eventCategories = [
@@ -16,8 +17,15 @@ const eventCategories = [
 
 export default function Events() {
   const { language } = useLanguage();
+  const { requireAuth } = useAuth();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const handleRegister = (evt) => {
+    requireAuth(() => {
+      alert(language === 'mr' ? 'यशस्वीरित्या नोंदणी झाली!' : 'Successfully registered!');
+    });
+  };
 
   const filtered = events.filter(e => {
     const matchCat = activeCategory === 'all' || e.category === activeCategory;
@@ -100,7 +108,9 @@ export default function Events() {
               </div>
             </div>
             <div className="event-card-footer">
-              <button className="btn btn-accent btn-sm" style={{ flex: 1 }}>{language === 'mr' ? 'नोंदणी करा' : 'Register Now'}</button>
+              <button className="btn btn-accent btn-sm" style={{ flex: 1 }} onClick={() => handleRegister(evt)}>
+                {language === 'mr' ? 'नोंदणी करा' : 'Register Now'}
+              </button>
               <button className="btn btn-outline btn-sm">{language === 'mr' ? 'शेअर करा' : 'Share'}</button>
             </div>
           </div>

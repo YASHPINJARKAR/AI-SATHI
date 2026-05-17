@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Mic, MicOff, Sparkles, Clock, Volume2, Bot, User, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { Send, Mic, MicOff, Sparkles, Clock, Volume2, Bot, User, RefreshCw, Wifi, WifiOff, Image, X } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { quickActions } from '../data/mockData';
 import { useLanguage } from '../LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import './Chat.css';
 
 // ── Gemini AI Setup ──────────────────────────────────────────────
@@ -85,6 +86,9 @@ You have deep knowledge about Amravati including:
 
 export default function Chat() {
   const { language } = useLanguage();
+  const { requireAuth } = useAuth();
+  const [selectedImage, setSelectedImage] = useState(null);
+  const fileInputRef = useRef(null);
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -146,15 +150,46 @@ export default function Chat() {
     window.speechSynthesis.speak(utterance);
   }, [isVoiceMode, language]);
 
+  // ── Image Upload ──────────────────────────────────────────────
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // ── Get AI Response via Gemini SDK ────────────────────────────
-  const getAIResponse = async (query) => {
+  const getAIResponse = async (query, base64Image = null) => {
     try {
       if (!chatRef.current) {
         throw new Error('Gemini chat session not initialized');
       }
 
       const langHint = language === 'mr' ? ' (Please respond in Marathi)' : '';
-      const result = await chatRef.current.sendMessage(query + langHint);
+      const fullQuery = query + langHint;
+      
+      let result;
+      if (base64Image) {
+        const base64Data = base64Image.split(',')[1];
+        const mimeType = base64Image.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)[1];
+        
+        const imagePart = {
+          inlineData: {
+            data: base64Data,
+            mimeType: mimeType
+          }
+        };
+        
+        const parts = [fullQuery || "What is in this image?", imagePart];
+        result = await chatRef.current.sendMessage(parts);
+      } else {
+        result = await chatRef.current.sendMessage(fullQuery);
+      }
+
       const response = await result.response;
       const text = response.text();
 
@@ -171,23 +206,28 @@ export default function Chat() {
 
   // ── Send Message ──────────────────────────────────────────────
   const handleSend = async (text = '') => {
-    const messageText = text || input.trim();
-    if (!messageText || isTyping) return;
+    requireAuth(async () => {
+      const messageText = text || input.trim();
+      if ((!messageText && !selectedImage) || isTyping) return;
 
-    const userMsg = { id: Date.now(), type: 'user', text: messageText, timestamp: new Date() };
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
-    setIsTyping(true);
+      const currentImage = selectedImage;
 
-    const responseText = await getAIResponse(messageText);
+      const userMsg = { id: Date.now(), type: 'user', text: messageText, image: currentImage, timestamp: new Date() };
+      setMessages(prev => [...prev, userMsg]);
+      setInput('');
+      setSelectedImage(null);
+      setIsTyping(true);
 
-    const botMsg = { id: Date.now() + 1, type: 'bot', text: responseText, timestamp: new Date() };
-    setMessages(prev => [...prev, botMsg]);
-    setIsTyping(false);
+      const responseText = await getAIResponse(messageText, currentImage);
 
-    if (isVoiceMode) {
-      speakText(responseText);
-    }
+      const botMsg = { id: Date.now() + 1, type: 'bot', text: responseText, timestamp: new Date() };
+      setMessages(prev => [...prev, botMsg]);
+      setIsTyping(false);
+
+      if (isVoiceMode) {
+        speakText(responseText);
+      }
+    });
   };
 
   // ── Keyboard Handler ─────────────────────────────────────────
@@ -383,6 +423,9 @@ export default function Chat() {
               </div>
             )}
             <div className="message-content">
+              {msg.image && (
+                <img src={msg.image} alt="User upload" className="message-image" />
+              )}
               <div className="message-bubble">
                 {formatMessage(msg.text)}
               </div>
@@ -418,7 +461,29 @@ export default function Chat() {
 
       {/* Input */}
       <div className="chat-input-container">
+        {selectedImage && (
+          <div className="image-preview-container animate-fade-in-up">
+            <img src={selectedImage} alt="Preview" className="image-preview" />
+            <button className="remove-image-btn" onClick={() => setSelectedImage(null)} title="Remove image">
+              <X size={14} />
+            </button>
+          </div>
+        )}
         <div className="chat-input-wrapper">
+          <button
+            className="image-upload-btn"
+            onClick={() => fileInputRef.current?.click()}
+            title={language === 'mr' ? 'फोटो अपलोड करा' : 'Upload Image'}
+          >
+            <Image size={20} />
+          </button>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            style={{ display: 'none' }} 
+            accept="image/*"
+            onChange={handleImageSelect}
+          />
           <button
             className={`voice-btn ${isListening ? 'listening' : ''}`}
             onClick={toggleVoice}
@@ -439,9 +504,9 @@ export default function Chat() {
             id="chat-input"
           />
           <button
-            className={`send-btn ${input.trim() && !isTyping ? 'active' : ''}`}
+            className={`send-btn ${(input.trim() || selectedImage) && !isTyping ? 'active' : ''}`}
             onClick={() => handleSend()}
-            disabled={!input.trim() || isTyping}
+            disabled={(!input.trim() && !selectedImage) || isTyping}
             id="send-btn"
           >
             <Send size={20} />

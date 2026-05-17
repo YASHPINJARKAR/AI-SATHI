@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageCircle, Building2, Calendar, Landmark, MapPin, Mic, TrendingUp, Users, Star, ArrowRight, Sparkles } from 'lucide-react';
 import { businesses, events } from '../data/mockData';
@@ -25,6 +26,18 @@ export default function Dashboard() {
   const topBusinesses = businesses.filter(b => b.rating >= 4.4).slice(0, 4);
   const upcomingEvents = events.slice(0, 3);
 
+  const [feedback, setFeedback] = useState({ rating: 0, view: '', suggestion: '' });
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleFeedbackSubmit = (e) => {
+    e.preventDefault();
+    setSubmitted(true);
+    setTimeout(() => {
+      setSubmitted(false);
+      setFeedback({ rating: 0, view: '', suggestion: '' });
+    }, 3000);
+  };
+
   return (
     <div className="page-container dashboard-page">
       {/* Hero */}
@@ -35,7 +48,7 @@ export default function Dashboard() {
             <span>AI-Powered City Guide</span>
           </div>
           <h1 className="hero-title">
-            {language === 'mr' ? 'सोबत आपले स्वागत आहे' : 'Welcome to'} <span className="gradient-text">Ai Sathi</span>
+            {language === 'mr' ? 'अमरावतीमध्ये स्वागत आहे' : 'Ai Sathi - Smart Support for Amravati'} <span className="gradient-text"></span>
           </h1>
           <p className="hero-subtitle marathi-text">
             {language === 'mr' ? 'अमरावतीचा AI सहाय्यक — तुम्हाला हवं ते शोधा, विचारा, जाणून घ्या' : 'Amravati\'s AI Assistant — find, ask, and know anything you need'}
@@ -142,6 +155,65 @@ export default function Dashboard() {
               <span className={`event-price-badge ${evt.price === 'Free' ? 'free' : ''}`}>{evt.price}</span>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Feedback Form */}
+      <section className="section feedback-section">
+        <div className="section-header">
+          <h2>{language === 'mr' ? 'तुमचा अभिप्राय' : 'Your Feedback'}</h2>
+          <p>{language === 'mr' ? 'Ai Sathi ला सुधारण्यासाठी आम्हाला मदत करा' : 'Help us improve Ai Sathi'}</p>
+        </div>
+        <div className="card feedback-card animate-fade-in-up">
+          {submitted ? (
+            <div className="feedback-success">
+              <Sparkles size={48} className="success-icon" style={{ color: 'var(--success)' }} />
+              <h3>{language === 'mr' ? 'धन्यवाद!' : 'Thank You!'}</h3>
+              <p>{language === 'mr' ? 'तुमचा अभिप्राय यशस्वीरित्या पाठवला गेला आहे.' : 'Your feedback has been successfully submitted.'}</p>
+            </div>
+          ) : (
+            <form className="feedback-form" onSubmit={handleFeedbackSubmit}>
+              <div className="form-group">
+                <label>{language === 'mr' ? 'वेबसाइटला रेटिंग द्या' : 'Rate the website'}</label>
+                <div className="rating-stars">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      type="button"
+                      key={star}
+                      className={`star-btn ${feedback.rating >= star ? 'active' : ''}`}
+                      onClick={() => setFeedback({ ...feedback, rating: star })}
+                    >
+                      <Star size={28} fill={feedback.rating >= star ? "currentColor" : "none"} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="form-group">
+                <label>{language === 'mr' ? 'Ai Sathi बद्दल तुमचे विचार' : 'Express view for Ai Sathi'}</label>
+                <textarea
+                  className="input"
+                  rows="3"
+                  value={feedback.view}
+                  onChange={(e) => setFeedback({ ...feedback, view: e.target.value })}
+                  placeholder={language === 'mr' ? 'तुमचे अनुभव येथे लिहा...' : 'Share your experience here...'}
+                  required
+                ></textarea>
+              </div>
+              <div className="form-group">
+                <label>{language === 'mr' ? 'Ai Sathi साठी काही सूचना' : 'Any suggestions for Ai Sathi'}</label>
+                <textarea
+                  className="input"
+                  rows="3"
+                  value={feedback.suggestion}
+                  onChange={(e) => setFeedback({ ...feedback, suggestion: e.target.value })}
+                  placeholder={language === 'mr' ? 'तुमच्या सूचना येथे लिहा...' : 'Write your suggestions here...'}
+                ></textarea>
+              </div>
+              <button type="submit" className="btn btn-primary btn-lg submit-btn" disabled={!feedback.rating || !feedback.view}>
+                {language === 'mr' ? 'सबमिट करा' : 'Submit Feedback'}
+              </button>
+            </form>
+          )}
         </div>
       </section>
     </div>

@@ -2,10 +2,12 @@ import { useState, useMemo } from 'react';
 import { Search, Star, MapPin, Clock, Phone, Filter, ChevronDown, Navigation, ExternalLink } from 'lucide-react';
 import { businesses, categories } from '../data/mockData';
 import { useLanguage } from '../LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import './Directory.css';
 
 export default function Directory() {
   const { language } = useLanguage();
+  const { requireAuth } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [sortBy, setSortBy] = useState('distance');
@@ -37,6 +39,12 @@ export default function Directory() {
   const openDirections = (business) => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${business.lat},${business.lng}`;
     window.open(url, '_blank');
+  };
+
+  const handleCall = (phone) => {
+    requireAuth(() => {
+      window.open(`tel:${phone}`, '_self');
+    });
   };
 
   return (
@@ -157,10 +165,10 @@ export default function Directory() {
                 Get Directions
               </button>
               {biz.phone && (
-                <a href={`tel:${biz.phone}`} className="btn btn-outline btn-sm">
+                <button className="btn btn-outline btn-sm" onClick={() => handleCall(biz.phone)}>
                   <Phone size={14} />
                   Call
-                </a>
+                </button>
               )}
             </div>
           </div>

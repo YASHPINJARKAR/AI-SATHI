@@ -517,6 +517,8 @@ input, textarea, select {
 @media (max-width: 1024px) {
   .main-content {
     margin-left: 0;
+    padding-top: 60px; /* Top app bar */
+    padding-bottom: 70px; /* Bottom nav */
   }
 
   .page-container {

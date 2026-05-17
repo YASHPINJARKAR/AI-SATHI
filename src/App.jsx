@@ -7,7 +7,13 @@ import Directory from './pages/Directory';
 import Events from './pages/Events';
 import Services from './pages/Services';
 import MapPage from './pages/MapPage';
+import FloatingChatButton from './components/FloatingChatButton';
+import BottomNav from './components/BottomNav';
+import TopRightProfile from './components/TopRightProfile';
+import LoginModal from './components/LoginModal';
+import ProfilePage from './pages/ProfilePage';
 import { LanguageProvider } from './LanguageContext';
+import { AuthProvider } from './context/AuthContext';
 import './App.css';
 
 function App() {
@@ -25,35 +31,42 @@ function App() {
   }, []);
 
   return (
-    <LanguageProvider>
-      <Router>
-        <div className="app-layout">
-          <Sidebar
-            collapsed={collapsed}
-            setCollapsed={setCollapsed}
-            darkMode={darkMode}
-            setDarkMode={setDarkMode}
-          />
-          <main 
-            className={`main-content ${collapsed ? 'collapsed' : ''}`}
-            onClick={() => {
-              if (!collapsed && window.innerWidth > 768) {
-                setCollapsed(true);
-              }
-            }}
-          >
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/chat" element={<Chat />} />
-              <Route path="/directory" element={<Directory />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/map" element={<MapPage />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
-    </LanguageProvider>
+    <AuthProvider>
+      <LanguageProvider>
+        <Router>
+          <div className="app-layout">
+            <Sidebar
+              collapsed={collapsed}
+              setCollapsed={setCollapsed}
+              darkMode={darkMode}
+              setDarkMode={setDarkMode}
+            />
+            <TopRightProfile />
+            <main 
+              className={`main-content ${collapsed ? 'collapsed' : ''}`}
+              onClick={() => {
+                if (!collapsed && window.innerWidth > 768) {
+                  setCollapsed(true);
+                }
+              }}
+            >
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/chat" element={<Chat />} />
+                <Route path="/directory" element={<Directory />} />
+                <Route path="/events" element={<Events />} />
+                <Route path="/services" element={<Services />} />
+                <Route path="/map" element={<MapPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+              </Routes>
+            </main>
+            <FloatingChatButton />
+            <BottomNav />
+            <LoginModal />
+          </div>
+        </Router>
+      </LanguageProvider>
+    </AuthProvider>
   );
 }
 

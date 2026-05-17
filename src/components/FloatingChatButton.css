@@ -1,0 +1,71 @@
+.floating-chat-button {
+  position: fixed;
+  bottom: 2.5rem;
+  right: 2.5rem;
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e3904c, #e84a16, #ec930e);
+  background-size: 200% 200%;
+  animation: gradientGlow 3s ease infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(233, 135, 7, 0.4);
+  z-index: 1000;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+  outline: none;
+}
+
+.floating-chat-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(244, 62, 17, 0.6);
+}
+
+.floating-chat-icon {
+  color: white;
+  width: 32px;
+  height: 32px;
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes gradientGlow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.floating-chat-button::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  background: inherit;
+  border-radius: 50%;
+  z-index: 0;
+  filter: blur(12px);
+  opacity: 0.7;
+  animation: inherit;
+}
+
+@media (max-width: 1024px) {
+  .floating-chat-button {
+    bottom: calc(70px + 1.5rem); /* above bottom nav */
+    right: 1.5rem;
+    width: 55px;
+    height: 55px;
+  }
+}

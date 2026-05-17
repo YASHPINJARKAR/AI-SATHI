@@ -29,10 +29,16 @@ export default function Sidebar({ collapsed, setCollapsed, darkMode, setDarkMode
 
   return (
     <>
-      {/* Mobile hamburger */}
-      <button className="mobile-menu-btn" onClick={() => setMobileOpen(true)} id="mobile-menu-toggle">
-        <Menu size={24} />
-      </button>
+      {/* Mobile Top Bar */}
+      <div className="mobile-top-bar">
+        <div className="mobile-brand" onClick={() => navigate('/')}>
+          <span className="brand-emoji">🤖</span>
+          <span className="brand-name">Ai Sathi</span>
+        </div>
+        <button className="mobile-menu-btn" onClick={() => setMobileOpen(true)} id="mobile-menu-toggle">
+          <Menu size={24} />
+        </button>
+      </div>
 
       {/* Overlay */}
       {mobileOpen && <div className="sidebar-overlay" onClick={() => setMobileOpen(false)} />}
@@ -58,8 +64,8 @@ export default function Sidebar({ collapsed, setCollapsed, darkMode, setDarkMode
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="sidebar-nav">
+        {/* Navigation (Hidden on mobile as we use BottomNav) */}
+        <nav className="sidebar-nav desktop-only-nav">
           <ul className="nav-list">
             {navItems.map((item) => (
               <li key={item.path} className="nav-item">
