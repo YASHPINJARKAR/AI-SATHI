@@ -1,0 +1,415 @@
+/* ===== Landing Page Styles (Orange & White Theme) ===== */
+.landing-page {
+  min-height: 100vh;
+  width: 100vw;
+  background-color: #ffffff;
+  color: #111827;
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow-x: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Background Grid */
+.landing-bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Nav */
+.landing-nav {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 5%;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.landing-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #111827;
+}
+
+.landing-launch-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #ff6d00 0%, #ff9e40 100%);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  box-shadow: 0 4px 15px rgba(255, 109, 0, 0.3);
+}
+
+.landing-launch-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 109, 0, 0.4);
+}
+
+/* Hero Section */
+.landing-hero {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 5%;
+  width: 100%;
+  gap: 60px;
+}
+
+/* Left Content */
+.landing-content {
+  flex: 1;
+  max-width: 600px;
+}
+
+.landing-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 109, 0, 0.08);
+  border: 1px solid rgba(255, 109, 0, 0.2);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ff6d00;
+  margin-bottom: 24px;
+}
+
+.landing-title {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  margin-bottom: 24px;
+  color: #111827;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #ff6d00 0%, #ff9e40 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.landing-subtitle {
+  font-size: 1.15rem;
+  color: #4b5563;
+  line-height: 1.6;
+  margin-bottom: 40px;
+}
+
+.landing-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.landing-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.landing-btn.primary {
+  background: linear-gradient(135deg, #ff6d00 0%, #ff9e40 100%);
+  color: white;
+  box-shadow: 0 8px 25px rgba(255, 109, 0, 0.3);
+}
+
+.landing-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(255, 109, 0, 0.4);
+}
+
+.landing-btn.secondary {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #111827;
+}
+
+.landing-btn.secondary:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* Right Visuals */
+.landing-visuals {
+  flex: 1;
+  position: relative;
+  height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glowing-orb {
+  width: 450px;
+  height: 450px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #ff9e40 0%, #ff6d00 40%, transparent 80%);
+  filter: blur(60px);
+  opacity: 0.35;
+  position: absolute;
+  animation: pulseOrb 8s ease-in-out infinite;
+}
+
+.cards-group {
+  position: relative;
+  width: 500px;
+  height: 500px;
+  z-index: 2;
+}
+
+/* Floating Cards */
+.floating-card {
+  position: absolute;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 24px 48px rgba(255, 109, 0, 0.08), 0 10px 20px rgba(0, 0, 0, 0.03);
+  animation: floatCard 6s ease-in-out infinite;
+  color: #111827;
+}
+
+.chat-card {
+  top: 40px;
+  right: 20px;
+  width: 320px;
+  border-radius: 20px;
+  padding: 24px;
+  animation-delay: 0s;
+}
+
+.card-header-dots {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.card-header-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #d1d5db;
+}
+.card-header-dots span:nth-child(1) { background: #ef4444; }
+.card-header-dots span:nth-child(2) { background: #f59e0b; }
+.card-header-dots span:nth-child(3) { background: #10b981; }
+
+.chat-bubble {
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.chat-bubble.bot {
+  background: #f3f4f6;
+  color: #4b5563;
+  border-bottom-left-radius: 4px;
+}
+
+.chat-bubble.user {
+  background: #ff6d00;
+  color: white;
+  border-bottom-right-radius: 4px;
+  margin-left: 20px;
+  margin-bottom: 0;
+}
+
+.mic-card {
+  bottom: 120px;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 32px;
+  border-radius: 999px; /* Perfect pill shape */
+  animation-delay: -2s;
+}
+
+.voice-waves {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+}
+
+.voice-waves span {
+  display: block;
+  width: 4px;
+  background: #ff6d00;
+  border-radius: 4px;
+  animation: wave 1.2s ease-in-out infinite;
+}
+
+.voice-waves span:nth-child(1) { height: 40%; animation-delay: 0s; }
+.voice-waves span:nth-child(2) { height: 100%; animation-delay: 0.2s; }
+.voice-waves span:nth-child(3) { height: 60%; animation-delay: 0.4s; }
+.voice-waves span:nth-child(4) { height: 80%; animation-delay: 0.1s; }
+
+.location-card {
+  bottom: 40px;
+  right: 80px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 24px 32px;
+  border-radius: 24px;
+  animation-delay: -4s;
+}
+
+.loc-icon {
+  background: rgba(255, 109, 0, 0.12);
+  padding: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loc-info h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.loc-info p {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Animations */
+@keyframes pulseOrb {
+  0%, 100% { transform: scale(1); opacity: 0.35; }
+  50% { transform: scale(1.05); opacity: 0.45; }
+}
+
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.4); }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .landing-hero {
+    flex-direction: column;
+    text-align: center;
+    padding-top: 60px;
+  }
+  .landing-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .landing-title { font-size: 3rem; }
+  .landing-visuals {
+    width: 100%;
+    margin-top: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .landing-title { font-size: 2.5rem; }
+  .landing-visuals {
+    height: 400px;
+    align-items: center;
+  }
+  .glowing-orb { 
+    width: 280px; 
+    height: 280px; 
+  }
+  .cards-group {
+    width: 320px;
+    height: 350px;
+    transform: none;
+  }
+  
+  .chat-card { 
+    top: 0; 
+    right: 0; 
+    width: 250px; 
+    padding: 16px;
+    border-radius: 16px;
+  }
+  .chat-bubble {
+    font-size: 0.85rem;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+  }
+  
+  .mic-card { 
+    bottom: 80px; 
+    left: -10px; 
+    padding: 12px 20px;
+  }
+  
+  .location-card { 
+    bottom: 0; 
+    right: -10px; 
+    padding: 16px 20px;
+    width: 210px;
+  }
+  .loc-icon { padding: 8px; }
+  .loc-info h4 { font-size: 0.9rem; }
+  .loc-info p { font-size: 0.75rem; }
+}
+
+@media (max-width: 480px) {
+  .landing-title { font-size: 2.2rem; }
+  .landing-visuals {
+    height: 360px;
+  }
+  .cards-group {
+    width: 280px;
+    height: 320px;
+  }
+  .chat-card {
+    width: 230px;
+    right: -10px;
+  }
+  .mic-card {
+    left: -20px;
+    bottom: 60px;
+  }
+  .location-card {
+    right: -20px;
+    bottom: -10px;
+  }
+}

@@ -63,8 +63,8 @@
 
 @media (max-width: 1024px) {
   .floating-chat-button {
-    bottom: calc(70px + 1.5rem); /* above bottom nav */
-    right: 1.5rem;
+    bottom: calc(75px + 1rem); /* properly above bottom nav */
+    right: 1.2rem;
     width: 55px;
     height: 55px;
   }

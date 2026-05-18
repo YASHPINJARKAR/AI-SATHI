@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { Search, Navigation, Star, MapPin, Phone, Clock, Layers } from 'lucide-react';
 import { businesses, categories } from '../data/mockData';
@@ -24,14 +24,129 @@ function FlyToMarker({ position }) {
   return null;
 }
 
+function RouteFitter({ routeCoords }) {
+  const map = useMap();
+  useEffect(() => {
+    if (routeCoords && routeCoords.length > 0) {
+      const bounds = L.latLngBounds(routeCoords);
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [routeCoords, map]);
+  return null;
+}
+
+// Custom Icon for User Location
+const userIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Custom Icon for Destination
+const destIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
 export default function MapPage() {
   const { language } = useLanguage();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBiz, setSelectedBiz] = useState(null);
   const [flyTo, setFlyTo] = useState(null);
+  
+  // New State for Live Location, Global Search, and Routing
+  const [userLocation, setUserLocation] = useState(null);
+  const [externalResults, setExternalResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [routeCoords, setRouteCoords] = useState(null);
+
+  const [locationError, setLocationError] = useState('');
 
   const amravatiCenter = [20.9320, 77.7523];
+
+  const requestLocation = () => {
+    setLocationError('');
+    const handleLocationFallback = () => {
+      // Mock location for local HTTP testing
+      const mockLocation = [20.9320, 77.7523];
+      setUserLocation(mockLocation);
+      setFlyTo(mockLocation);
+      setLocationError(language === 'mr' ? 'असुरक्षित नेटवर्कमुळे लोकेशन सिमुलेट केले आहे (Mocked).' : 'GPS blocked on local Wi-Fi. Using mock location.');
+    };
+
+    if (navigator.geolocation && (window.isSecureContext || window.location.hostname === 'localhost')) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserLocation([pos.coords.latitude, pos.coords.longitude]);
+          setFlyTo([pos.coords.latitude, pos.coords.longitude]);
+        },
+        (err) => {
+          console.error('Location access denied or failed.', err);
+          handleLocationFallback();
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+      
+      const watchId = navigator.geolocation.watchPosition(
+        (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
+        (err) => console.error('Watch error', err),
+        { enableHighAccuracy: true }
+      );
+      return () => navigator.geolocation.clearWatch(watchId);
+    } else {
+      // Fallback for insecure network testing (e.g. 10.79.x.x)
+      handleLocationFallback();
+    }
+  };
+
+  // Auto-request location on mount
+  useEffect(() => {
+    const cleanup = requestLocation();
+    return () => {
+      if (typeof cleanup === 'function') cleanup();
+    };
+  }, []);
+
+  // Fetch from Nominatim for global Amravati search
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (searchQuery.length > 2) {
+        setIsSearching(true);
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery + ', Amravati, Maharashtra')}&format=json&limit=15`);
+          const data = await res.json();
+          const mapped = data.map(item => ({
+            id: item.place_id,
+            name: item.display_name.split(',')[0],
+            nameMarathi: item.display_name.split(',')[0],
+            address: item.display_name,
+            lat: parseFloat(item.lat),
+            lng: parseFloat(item.lon),
+            category: 'external',
+            rating: '-',
+            distance: 'Web Result',
+            isOpen: true,
+            image: '📍'
+          }));
+          setExternalResults(mapped);
+        } catch (e) {
+          console.error("Geocoding failed", e);
+        }
+        setIsSearching(false);
+      } else {
+        setExternalResults([]);
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const filtered = useMemo(() => {
     let list = businesses;
@@ -46,16 +161,40 @@ export default function MapPage() {
         b.category.includes(q)
       );
     }
-    return list;
-  }, [activeCategory, searchQuery]);
+    // Combine with external global search results
+    return [...list, ...externalResults];
+  }, [activeCategory, searchQuery, externalResults]);
 
   const handleBizClick = (biz) => {
     setSelectedBiz(biz);
     setFlyTo([biz.lat, biz.lng]);
+    setRouteCoords(null); // Clear previous route
+  };
+
+  const calculateRoute = async (biz) => {
+    if (!userLocation) {
+      alert(language === 'mr' ? "मार्ग शोधण्यासाठी कृपया तुमचे लोकेशन चालू करा." : "Please enable location to find a route.");
+      return;
+    }
+    try {
+      const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${userLocation[1]},${userLocation[0]};${biz.lng},${biz.lat}?overview=full&geometries=geojson`);
+      const data = await res.json();
+      if (data.routes && data.routes[0]) {
+        const coords = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+        setRouteCoords(coords);
+        setSelectedBiz(biz);
+      } else {
+        alert(language === 'mr' ? "मार्ग सापडला नाही." : "Route not found.");
+      }
+    } catch(e) {
+      console.error("Routing error", e);
+      alert(language === 'mr' ? "मार्ग शोधताना त्रुटी आली." : "Error calculating route.");
+    }
   };
 
   const openDirections = (biz) => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${biz.lat},${biz.lng}`;
+    const originParams = userLocation ? `&origin=${userLocation[0]},${userLocation[1]}` : '';
+    const url = `https://www.google.com/maps/dir/?api=1${originParams}&destination=${biz.lat},${biz.lng}`;
     window.open(url, '_blank');
   };
 
@@ -68,17 +207,30 @@ export default function MapPage() {
             <h2>{language === 'mr' ? 'अमरावती नकाशा' : 'Explore Amravati'}</h2>
           </div>
 
-          <div className="map-search">
-            <Search size={18} className="search-icon" />
-            <input
-              type="text"
-              placeholder={language === 'mr' ? "ठिकाणे शोधा..." : "Search places..."}
-              className="search-input"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              id="map-search"
-            />
+          <div className="map-search" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+              <Search size={18} className="search-icon" style={{ position: 'absolute', left: '12px' }} />
+              <input
+                type="text"
+                placeholder={language === 'mr' ? "ठिकाणे शोधा..." : "Search places..."}
+                className="search-input"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                id="map-search"
+                style={{ width: '100%', paddingLeft: '36px' }}
+              />
+            </div>
+            <button 
+              onClick={requestLocation} 
+              className="btn btn-primary btn-sm"
+              title={language === 'mr' ? 'माझे लोकेशन शोधा' : 'Find My Location'}
+              style={{ padding: '8px 12px', flexShrink: 0 }}
+            >
+              <Navigation size={18} />
+            </button>
           </div>
+          {locationError && <p style={{ color: 'var(--danger)', fontSize: '0.8rem', marginTop: '4px' }}>{locationError}</p>}
+          {isSearching && <p style={{ color: 'var(--primary)', fontSize: '0.8rem', marginTop: '4px' }}>{language === 'mr' ? 'शोधत आहे...' : 'Searching web...'}</p>}
 
           <div className="map-categories">
             {categories.map(cat => (
@@ -130,20 +282,46 @@ export default function MapPage() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             {flyTo && <FlyToMarker position={flyTo} />}
-            {filtered.map(biz => (
-              <Marker key={biz.id} position={[biz.lat, biz.lng]}>
+            {/* Live Location Marker */}
+            {userLocation && (
+              <Marker position={userLocation} icon={userIcon}>
+                <Popup>{language === 'mr' ? 'तुम्ही येथे आहात' : 'You are here'}</Popup>
+              </Marker>
+            )}
+
+            {/* In-App Route Polyline */}
+            {routeCoords && (
+              <>
+                <Polyline positions={routeCoords} color="#2979ff" weight={5} opacity={0.8} />
+                <RouteFitter routeCoords={routeCoords} />
+              </>
+            )}
+
+            {filtered.map((biz, idx) => (
+              <Marker key={`${biz.id}-${idx}`} position={[biz.lat, biz.lng]} icon={selectedBiz?.id === biz.id ? destIcon : new L.Icon.Default()}>
                 <Popup>
                   <div className="map-popup">
                     <h4>{biz.image} {language === 'mr' ? biz.nameMarathi : biz.name}</h4>
                     <p>⭐ {biz.rating} • {biz.distance} • {biz.isOpen ? '🟢 ' + (language === 'mr' ? 'उघडे आहे' : 'Open') : '🔴 ' + (language === 'mr' ? 'बंद आहे' : 'Closed')}</p>
-                    <p>📍 {biz.address}</p>
+                    <p>📍 {biz.address.substring(0, 50)}{biz.address.length > 50 ? '...' : ''}</p>
                     {biz.phone && <p>📞 {biz.phone}</p>}
-                    <button
-                      className="popup-directions-btn"
-                      onClick={() => openDirections(biz)}
-                    >
-                      🧭 {language === 'mr' ? 'दिशा मिळवा' : 'Get Directions'}
-                    </button>
+                    
+                    <div className="popup-actions" style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                      <button
+                        className="popup-directions-btn btn-primary"
+                        onClick={() => calculateRoute(biz)}
+                        style={{ flex: 1, padding: '8px', borderRadius: '8px', border: 'none', background: 'var(--primary)', color: 'white', cursor: 'pointer' }}
+                      >
+                        🛣️ {language === 'mr' ? 'मार्ग दाखवा' : 'Show Route'}
+                      </button>
+                      <button
+                        className="popup-directions-btn btn-outline"
+                        onClick={() => openDirections(biz)}
+                        style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer' }}
+                      >
+                        🧭 {language === 'mr' ? 'गुगल मॅप्स' : 'Google Maps'}
+                      </button>
+                    </div>
                   </div>
                 </Popup>
               </Marker>

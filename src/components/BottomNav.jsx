@@ -4,7 +4,7 @@ import { useLanguage } from '../LanguageContext';
 import './BottomNav.css';
 
 const navItems = [
-  { path: '/', label: 'Home', labelMarathi: 'मुख्यपृष्ठ', icon: LayoutDashboard },
+  { path: '/dashboard', label: 'Home', labelMarathi: 'मुख्यपृष्ठ', icon: LayoutDashboard },
   { path: '/directory', label: 'Directory', labelMarathi: 'डिरेक्टरी', icon: Building2 },
   { path: '/chat', label: 'AI Chat', labelMarathi: 'AI चॅट', icon: MessageCircle },
   { path: '/events', label: 'Events', labelMarathi: 'कार्यक्रम', icon: Calendar },

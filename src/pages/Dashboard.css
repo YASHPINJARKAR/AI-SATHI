@@ -404,34 +404,78 @@
   .hero {
     flex-direction: column;
     text-align: center;
-    padding: var(--space-xl);
+    padding: var(--space-lg);
     min-height: auto;
+    gap: var(--space-lg);
   }
 
-  .hero-content { align-items: center; display: flex; flex-direction: column; }
-  .hero-desc { text-align: center; }
-  .hero-actions { justify-content: center; }
-  .hero-graphic { width: 140px; height: 140px; }
-  .hero-emoji { font-size: 3rem; }
-  .hero-title { font-size: 2rem; }
+  .hero-content {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero-desc { text-align: center; max-width: 100%; }
+  .hero-actions { justify-content: center; flex-wrap: wrap; gap: 10px; }
+  .hero-actions .btn { width: 100%; max-width: 260px; }
+  .hero-graphic { width: 120px; height: 120px; }
+  .hero-emoji { font-size: 2.8rem; }
+  .hero-title { font-size: 1.7rem; }
+  .hero-subtitle { font-size: 0.9rem; }
+  .hero-desc { font-size: 0.82rem; }
 }
 
 @media (max-width: 768px) {
+  .hero {
+    padding: var(--space-md);
+    border-radius: var(--radius-xl);
+    gap: var(--space-md);
+  }
+
+  .hero-title { font-size: 1.5rem; }
+  .hero-visual { display: none; } /* hide robot on very small screens */
+
   .stats-section {
     grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
+
+  .stat-card { padding: var(--space-md) var(--space-sm); }
+  .stat-value { font-size: 1.3rem; }
 
   .features-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 
-  .hero-title { font-size: 1.6rem; }
+  .feature-card { padding: var(--space-md); }
+  .feature-icon { font-size: 1.5rem; }
+  .feature-title { font-size: 0.9rem; }
+  .feature-desc { font-size: 0.75rem; }
+
+  .top-rated-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .top-card { padding: var(--space-sm) var(--space-md); }
+
+  .event-preview-card { padding: var(--space-sm) var(--space-md); }
+  .event-preview-meta { flex-wrap: wrap; gap: 6px; }
+  .event-preview-info h4 { font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .section-header h2 { font-size: 1.1rem; }
+
+  .feedback-card { padding: var(--space-md); }
+  .submit-btn { width: 100%; }
 }
 
 @media (max-width: 480px) {
   .features-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
+
+  .hero-actions .btn { max-width: 100%; }
 }
 
 /* Feedback Form Styles */

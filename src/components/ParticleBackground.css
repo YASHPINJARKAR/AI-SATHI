@@ -1,0 +1,36 @@
+/* ===== Futuristic Particle Background ===== */
+.particle-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1; /* Just behind the main layout but above deep background */
+  pointer-events: none; /* Let clicks pass through */
+  overflow: hidden;
+  background: var(--bg-primary); /* Adapts to light/dark mode automatically */
+}
+
+/* Deep space ambient fog */
+.ambient-fog {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(0, 255, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(138, 43, 226, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(65, 105, 225, 0.03) 0%, transparent 60%);
+  filter: blur(40px);
+  z-index: 0;
+}
+
+.particle-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  z-index: 1;
+  filter: drop-shadow(0 0 8px rgba(0,255,255,0.2));
+}
+
+/* 
+  Make sure the app layout is slightly transparent in dark mode 
+  so the particles can be seen behind the cards and content! 
+*/

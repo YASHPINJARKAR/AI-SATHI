@@ -226,12 +226,33 @@
   cursor: pointer;
 }
 
-.mobile-menu-btn {
-  display: none;
-  padding: 8px;
+.mobile-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 60px; /* Leaves space for TopRightProfile */
+}
+
+.mobile-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
   border-radius: var(--radius-md);
   background: transparent;
-  color: var(--text-primary);
+  color: var(--text-secondary);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mobile-action-btn:hover {
+  background: var(--surface-hover);
+  color: var(--accent);
+}
+
+.mobile-menu-btn {
+  display: none;
 }
 
 .sidebar-overlay {
@@ -240,34 +261,15 @@
 
 @media (max-width: 1024px) {
   .sidebar {
-    transform: translateX(-100%);
-    box-shadow: none;
-  }
-
-  .sidebar.mobile-open {
-    transform: translateX(0);
-    box-shadow: var(--shadow-xl);
+    display: none; /* Sidebar is not needed on mobile at all */
   }
 
   .mobile-top-bar {
     display: flex;
   }
 
-  .mobile-menu-btn {
-    display: flex;
-  }
-
-  .mobile-close-btn {
-    display: flex;
-  }
-
   .sidebar-overlay {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    backdrop-filter: blur(4px);
+    display: none;
   }
 
   .desktop-only-nav {

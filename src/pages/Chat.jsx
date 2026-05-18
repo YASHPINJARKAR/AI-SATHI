@@ -9,6 +9,7 @@ import './Chat.css';
 // ── Gemini AI Setup ──────────────────────────────────────────────
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
+const GEMINI_MODEL = 'gemini-2.5-flash'; // Confirmed working model
 
 const SYSTEM_PROMPT = `You are **Ai Sathi** (AI साथी), a smart, friendly, and helpful digital assistant built specifically for the citizens of **Amravati city, Maharashtra, India**, but capable of answering any question from the user.
 
@@ -108,6 +109,23 @@ export default function Chat() {
   const inputRef = useRef(null);
   const chatRef = useRef(null);
 
+  // Update welcome message if user switches language before chatting
+  useEffect(() => {
+    setMessages(prev => {
+      if (prev.length === 1 && prev[0].id === 1) {
+        return [{
+          id: 1,
+          type: 'bot',
+          text: language === 'mr'
+            ? 'नमस्कार! मी **Ai Sathi** 🤖, तुमचा अमरावती डिजिटल सहाय्यक.\n\nमी तुम्हाला खालील गोष्टींमध्ये मदत करू शकतो:\n- 🏥 हॉस्पिटल व आरोग्य सेवा\n- 🍽️ रेस्टॉरंट व खाद्यपदार्थ\n- 🏛️ सरकारी योजना व सेवा\n- 📚 शिक्षण व कोचिंग\n- 📍 दिशा व ठिकाणे\n\nकाहीही विचारा!'
+            : 'Hello! I\'m **Ai Sathi** 🤖, your Amravati digital assistant.\n\nI can help you with:\n- 🏥 Hospitals & Healthcare\n- 🍽️ Restaurants & Food\n- 🏛️ Government Schemes & Services\n- 📚 Education & Coaching\n- 📍 Directions & Places\n\nAsk me anything!',
+          timestamp: new Date()
+        }];
+      }
+      return prev;
+    });
+  }, [language]);
+
   // ── Initialize Gemini Chat Session ────────────────────────────
   useEffect(() => {
     if (!genAI) {
@@ -116,7 +134,7 @@ export default function Chat() {
       return;
     }
     try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
       const chat = model.startChat({
         history: [
           { role: 'user', parts: [{ text: 'System instructions: ' + SYSTEM_PROMPT }] },
@@ -126,8 +144,9 @@ export default function Chat() {
       });
       chatRef.current = chat;
       setIsConnected(true);
+      console.log('✅ Gemini API connected successfully using model:', GEMINI_MODEL);
     } catch (err) {
-      console.error('Failed to initialize Gemini:', err);
+      console.error('❌ Failed to initialize Gemini:', err);
       setIsConnected(false);
     }
   }, []);
@@ -145,10 +164,32 @@ export default function Chat() {
     window.speechSynthesis.cancel();
     const cleanText = text.replace(/[*_#\[\]]/g, '').replace(/\n/g, '. ');
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = language === 'mr' ? 'mr-IN' : 'en-IN';
-    utterance.rate = 0.9;
+    
+    const targetLang = language === 'mr' ? 'mr-IN' : 'en-IN';
+    utterance.lang = targetLang;
+    
+    // Get voices (might need to handle async loading in some browsers)
+    let voices = window.speechSynthesis.getVoices();
+    
+    if (voices.length > 0) {
+      // Look for exact match, then language match, then any Indian voice
+      const preferredVoice = voices.find(v => v.lang.replace('_', '-').toLowerCase() === targetLang.toLowerCase()) 
+                          || voices.find(v => v.lang.toLowerCase().startsWith(language.toLowerCase()))
+                          || (language === 'mr' ? voices.find(v => v.lang.includes('IN')) : null);
+                          
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+    }
+    
+    utterance.rate = language === 'mr' ? 0.9 : 1.0; 
     window.speechSynthesis.speak(utterance);
   }, [isVoiceMode, language]);
+  
+  // Ensure voices are loaded for Chrome/Android
+  useEffect(() => {
+    window.speechSynthesis.onvoiceschanged = () => {};
+  }, []);
 
   // ── Image Upload ──────────────────────────────────────────────
   const handleImageSelect = (e) => {
@@ -169,7 +210,9 @@ export default function Chat() {
         throw new Error('Gemini chat session not initialized');
       }
 
-      const langHint = language === 'mr' ? ' (Please respond in Marathi)' : '';
+      const langHint = language === 'mr' 
+        ? ' (CRITICAL: You MUST respond entirely in Marathi language using Devanagari script. Do not use English words.)' 
+        : ' (Please respond entirely in English.)';
       const fullQuery = query + langHint;
       
       let result;
@@ -255,7 +298,10 @@ export default function Chat() {
     recognition.lang = language === 'mr' ? 'mr-IN' : 'en-IN';
     recognition.continuous = false;
     recognition.interimResults = false;
+    
     setIsListening(true);
+    setIsVoiceMode(true); // Auto-enable voice response when user speaks
+    
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       setInput(transcript);
@@ -265,9 +311,27 @@ export default function Chat() {
         handleSend(transcript);
       }, 300);
     };
-    recognition.onerror = () => setIsListening(false);
+    
+    recognition.onerror = (e) => {
+      setIsListening(false);
+      console.error('Speech recognition error:', e.error);
+      if (e.error === 'not-allowed' && !window.isSecureContext) {
+        alert(language === 'mr' 
+          ? 'मायक्रोफोनला परवानगी नाकारली आहे. (लोकल HTTP नेटवर्कवर ब्राऊजर माइक ब्लॉक करतो. कृपया टाइप करा.)'
+          : 'Microphone access denied. (Mobile browsers block the mic on local HTTP testing networks. Please type instead.)');
+      } else if (e.error === 'not-allowed') {
+        alert(language === 'mr' ? 'कृपया मायक्रोफोनला परवानगी द्या.' : 'Please allow microphone access.');
+      }
+    };
+    
     recognition.onend = () => setIsListening(false);
-    recognition.start();
+    
+    try {
+      recognition.start();
+    } catch (err) {
+      console.error('Speech recognition start error:', err);
+      setIsListening(false);
+    }
   };
 
   // ── Clear Chat ────────────────────────────────────────────────
@@ -286,7 +350,7 @@ export default function Chat() {
     // Reinitialize Gemini chat session
     if (genAI) {
       try {
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
         const chat = model.startChat({
           history: [
             { role: 'user', parts: [{ text: 'System instructions: ' + SYSTEM_PROMPT }] },
@@ -495,6 +559,8 @@ export default function Chat() {
           <input
             ref={inputRef}
             type="text"
+            lang={language === 'mr' ? 'mr' : 'en'}
+            dir="auto"
             className="chat-input"
             placeholder={language === 'mr' ? "तुमचा प्रश्न टाइप करा..." : "Type your question..."}
             value={input}

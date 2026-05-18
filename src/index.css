@@ -103,9 +103,9 @@
 
 /* ----- Dark Mode ----- */
 [data-theme="dark"] {
-  --bg-primary: #0a0e1a;
-  --bg-secondary: #111827;
-  --bg-tertiary: #1a2035;
+  --bg-primary: #050814;
+  --bg-secondary: rgba(17, 24, 39, 0.7);
+  --bg-tertiary: rgba(26, 32, 53, 0.6);
   --surface: #1a2035;
   --surface-hover: #222b45;
   --surface-active: #2a3555;
@@ -146,8 +146,8 @@ html {
 }
 
 body {
-  font-family: var(--font-body);
-  background: var(--bg-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: transparent;
   color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -210,7 +210,10 @@ input, textarea, select {
 .app-layout {
   display: flex;
   min-height: 100vh;
-  background: var(--bg-primary);
+  background: transparent;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .main-content {
@@ -220,6 +223,7 @@ input, textarea, select {
   flex-direction: column;
   min-height: 100vh;
   transition: margin-left var(--transition-base);
+  min-width: 0; /* Critical for mobile: prevent wide flex children from stretching body */
 }
 
 .main-content.collapsed {
@@ -232,6 +236,7 @@ input, textarea, select {
   max-width: var(--content-max-width);
   width: 100%;
   margin: 0 auto;
+  min-width: 0; /* Critical for mobile: prevent wide flex children from stretching container */
 }
 
 /* ----- Animations ----- */
@@ -517,8 +522,8 @@ input, textarea, select {
 @media (max-width: 1024px) {
   .main-content {
     margin-left: 0;
-    padding-top: 60px; /* Top app bar */
-    padding-bottom: 70px; /* Bottom nav */
+    padding-top: 60px;  /* mobile top bar */
+    padding-bottom: 80px; /* bottom nav + safe area */
   }
 
   .page-container {
@@ -528,12 +533,24 @@ input, textarea, select {
 
 @media (max-width: 768px) {
   :root {
-    --space-xl: 20px;
-    --space-2xl: 32px;
-    --space-3xl: 48px;
+    --space-xl: 16px;
+    --space-2xl: 28px;
+    --space-3xl: 40px;
   }
 
   .page-container {
-    padding: var(--space-md) var(--space-sm);
+    padding: 12px;
+  }
+
+  /* Prevent horizontal scroll on all pages */
+  .page-container > * {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    padding: 10px 8px;
   }
 }

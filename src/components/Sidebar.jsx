@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 
 const navItems = [
-  { path: '/', label: 'Dashboard', labelMarathi: 'डॅशबोर्ड', icon: LayoutDashboard },
+  { path: '/dashboard', label: 'Dashboard', labelMarathi: 'डॅशबोर्ड', icon: LayoutDashboard },
   { path: '/chat', label: 'AI Chat', labelMarathi: 'AI चॅट', icon: MessageCircle },
   { path: '/directory', label: 'Directory', labelMarathi: 'डिरेक्टरी', icon: Building2 },
   { path: '/events', label: 'Events', labelMarathi: 'कार्यक्रम', icon: Calendar },
@@ -31,13 +31,24 @@ export default function Sidebar({ collapsed, setCollapsed, darkMode, setDarkMode
     <>
       {/* Mobile Top Bar */}
       <div className="mobile-top-bar">
-        <div className="mobile-brand" onClick={() => navigate('/')}>
+        <div className="mobile-brand" onClick={() => navigate('/dashboard')}>
           <span className="brand-emoji">🤖</span>
           <span className="brand-name">Ai Sathi</span>
         </div>
-        <button className="mobile-menu-btn" onClick={() => setMobileOpen(true)} id="mobile-menu-toggle">
-          <Menu size={24} />
-        </button>
+        
+        <div className="mobile-top-actions">
+          <button className="mobile-action-btn" onClick={toggleLanguage} title={language === 'mr' ? 'English' : 'मराठी'}>
+            <Globe size={20} />
+          </button>
+          
+          <button className="mobile-action-btn" onClick={() => navigate('/chat')} title={language === 'mr' ? 'आवाज' : 'Voice'}>
+            <Mic size={20} />
+          </button>
+          
+          <button className="mobile-action-btn" onClick={() => setDarkMode(!darkMode)} title={darkMode ? 'Light Mode' : 'Dark Mode'}>
+            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+        </div>
       </div>
 
       {/* Overlay */}
