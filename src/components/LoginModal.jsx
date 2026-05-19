@@ -109,7 +109,7 @@ export default function LoginModal() {
       }
     } catch (err) {
       console.error("Google Login Error:", err.message);
-      setError(language === 'mr' ? 'Google लॉगिन अयशस्वी' : 'Google Login Failed');
+      setError(language === 'mr' ? `Google लॉगिन अयशस्वी: ${err.message}` : `Google Login Failed: ${err.message}`);
     }
   };
 

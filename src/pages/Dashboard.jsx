@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MessageCircle, Building2, Calendar, Landmark, MapPin, Mic, TrendingUp, Users, Star, ArrowRight, Sparkles } from 'lucide-react';
 import { businesses, events } from '../data/mockData';
 import { useLanguage } from '../LanguageContext';
+import DeveloperModal from '../components/DeveloperModal';
 import './Dashboard.css';
 
 const stats = [
@@ -28,6 +29,7 @@ export default function Dashboard() {
 
   const [feedback, setFeedback] = useState({ rating: 0, view: '', suggestion: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [isDevModalOpen, setIsDevModalOpen] = useState(false);
 
   const handleFeedbackSubmit = (e) => {
     e.preventDefault();
@@ -216,6 +218,21 @@ export default function Dashboard() {
           )}
         </div>
       </section>
+
+      {/* Dashboard Footer (Privacy & Developer Info) */}
+      <footer className="dashboard-footer">
+        <p className="privacy-text">
+          {language === 'mr' 
+            ? '🔒 तुमची गोपनीयता आमच्यासाठी महत्त्वाची आहे. तुमचा सर्व डेटा सुरक्षित ठेवला जातो आणि कोणत्याही तिसऱ्या पक्षाला विकला जात नाही.' 
+            : '🔒 Your privacy and security matter. All data is securely handled and never shared with third parties.'}
+        </p>
+        <button className="btn btn-outline dev-team-btn" onClick={() => setIsDevModalOpen(true)}>
+          <Users size={16} /> {language === 'mr' ? 'डेव्हलपर्स' : 'Developers'}
+        </button>
+      </footer>
+
+      {/* Developer Modal Overlay */}
+      <DeveloperModal isOpen={isDevModalOpen} onClose={() => setIsDevModalOpen(false)} />
     </div>
   );
 }

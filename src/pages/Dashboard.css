@@ -553,3 +553,32 @@
 .feedback-success p {
   color: var(--text-secondary);
 }
+
+/* Dashboard Footer */
+.dashboard-footer {
+  margin-top: var(--space-3xl);
+  padding: var(--space-xl) var(--space-md);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  text-align: center;
+  padding-bottom: 5rem; /* extra padding for mobile nav */
+}
+
+.privacy-text {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  max-width: 600px;
+  line-height: 1.5;
+}
+
+.dev-team-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  border-radius: var(--radius-full);
+  padding: 0.5rem 1rem;
+}
