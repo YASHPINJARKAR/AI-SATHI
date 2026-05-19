@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Mic, MapPin, Sparkles, MessageSquare } from 'lucide-react';
+import { ArrowRight, Mic, MapPin, Sparkles, MessageSquare, Sun, Moon, Globe } from 'lucide-react';
 import './LandingPage.css';
+import { useLanguage } from '../LanguageContext';
 
-export default function LandingPage() {
+export default function LandingPage({ darkMode, setDarkMode }) {
+  const { language, toggleLanguage } = useLanguage();
+
   return (
     <div className="landing-page">
       {/* Navigation Bar */}
@@ -11,9 +14,14 @@ export default function LandingPage() {
           <span className="landing-logo-icon">🤖</span>
           <span className="landing-logo-text">Ai Sathi</span>
         </div>
-        <Link to="/dashboard" className="landing-launch-btn">
-          Launch App <ArrowRight size={16} />
-        </Link>
+        <div className="landing-nav-actions">
+          <button className="landing-icon-btn" onClick={toggleLanguage} title={language === 'mr' ? 'English' : 'मराठी'}>
+            <Globe size={20} />
+          </button>
+          <button className="landing-icon-btn" onClick={() => setDarkMode(!darkMode)} title={darkMode ? 'Light Mode' : 'Dark Mode'}>
+            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+        </div>
       </nav>
 
       {/* Main Hero Section */}
@@ -21,24 +29,26 @@ export default function LandingPage() {
         {/* Left Content */}
         <div className="landing-content">
           <div className="landing-pill animate-fade-in-up" style={{ animationDelay: '0ms' }}>
-            <Sparkles size={14} /> Future of Smart Cities
+            <Sparkles size={14} /> {language === 'mr' ? 'स्मार्ट शहरांचे भविष्य' : 'Future of Smart Cities'}
           </div>
           
           <h1 className="landing-title animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            Future of Smart Amravati <br/>
-            <span className="text-gradient">Starts Here</span>
+            {language === 'mr' ? 'स्मार्ट अमरावतीचे भविष्य' : 'Future of Smart Amravati'} <br/>
+            <span className="text-gradient">{language === 'mr' ? 'येथून सुरू होते' : 'Starts Here'}</span>
           </h1>
           
           <p className="landing-subtitle animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-            A real-time AI-powered smart city assistant platform for public services, navigation, local businesses, and more.
+            {language === 'mr' 
+              ? 'सार्वजनिक सेवा, नेव्हिगेशन, स्थानिक व्यवसाय आणि बरेच काही यासाठी रिअल-टाइम AI-सक्षम स्मार्ट सिटी असिस्टंट प्लॅटफॉर्म.'
+              : 'A real-time AI-powered smart city assistant platform for public services, navigation, local businesses, and more.'}
           </p>
           
           <div className="landing-actions animate-fade-in-up" style={{ animationDelay: '300ms' }}>
             <Link to="/dashboard" className="landing-btn primary">
-              Get Started <ArrowRight size={18} />
+              {language === 'mr' ? 'सुरुवात करा' : 'Get Started'} <ArrowRight size={18} />
             </Link>
             <Link to="/chat" className="landing-btn secondary">
-              Talk to AI
+              {language === 'mr' ? 'AI शी बोला' : 'Talk to AI'}
             </Link>
           </div>
         </div>
@@ -54,8 +64,8 @@ export default function LandingPage() {
               <div className="card-header-dots">
                 <span></span><span></span><span></span>
               </div>
-              <div className="chat-bubble bot">Hello! How can I help you today?</div>
-              <div className="chat-bubble user">Find nearby hospitals</div>
+              <div className="chat-bubble bot">{language === 'mr' ? 'नमस्कार! मी तुम्हाला कशी मदत करू शकेन?' : 'Hello! How can I help you today?'}</div>
+              <div className="chat-bubble user">{language === 'mr' ? 'जवळचे रुग्णालये शोधा' : 'Find nearby hospitals'}</div>
             </div>
 
             <div className="floating-card mic-card">
@@ -70,8 +80,8 @@ export default function LandingPage() {
                 <MapPin size={24} color="#ff6d00" />
               </div>
               <div className="loc-info">
-                <h4>Irwin Hospital</h4>
-                <p>2.4 km away</p>
+                <h4>{language === 'mr' ? 'इर्विन हॉस्पिटल' : 'Irwin Hospital'}</h4>
+                <p>{language === 'mr' ? '२.४ किमी दूर' : '2.4 km away'}</p>
               </div>
             </div>
           </div>

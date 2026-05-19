@@ -25,7 +25,7 @@ function AppContent({ collapsed, setCollapsed, darkMode, setDarkMode }) {
   if (isLandingPage) {
     return (
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<LandingPage darkMode={darkMode} setDarkMode={setDarkMode} />} />
       </Routes>
     );
   }

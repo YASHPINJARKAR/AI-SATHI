@@ -2,13 +2,46 @@
 .landing-page {
   min-height: 100vh;
   width: 100vw;
-  background-color: #ffffff;
-  color: #111827;
+  background-color: var(--bg-secondary, #ffffff);
+  color: var(--text-primary, #111827);
   font-family: 'Inter', system-ui, sans-serif;
   overflow-x: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
+}
+
+[data-theme="dark"] .landing-title,
+[data-theme="dark"] .landing-logo {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .landing-subtitle {
+  color: #a0a8c0;
+}
+
+[data-theme="dark"] .floating-card {
+  background: var(--surface);
+  border-color: var(--border-light);
+  color: var(--text-primary);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .chat-bubble.bot {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .btn.secondary {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+[data-theme="dark"] .landing-btn.secondary {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+[data-theme="dark"] .landing-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* Background Grid */
@@ -21,6 +54,12 @@
   background-size: 50px 50px;
   z-index: 0;
   pointer-events: none;
+}
+
+[data-theme="dark"] .landing-bg-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
 }
 
 /* Nav */
@@ -44,6 +83,41 @@
   font-weight: 800;
   letter-spacing: -0.5px;
   color: #111827;
+}
+
+.landing-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.landing-icon-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.landing-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #111827;
+}
+
+[data-theme="dark"] .landing-icon-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] .landing-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
 }
 
 .landing-launch-btn {

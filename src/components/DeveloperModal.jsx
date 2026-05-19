@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Phone, Camera } from 'lucide-react';
+import { X, Phone } from 'lucide-react';
 import './DeveloperModal.css';
 
 const InstagramIcon = ({ size = 16 }) => (
@@ -27,28 +27,29 @@ export default function DeveloperModal({ isOpen, onClose }) {
       phone: '+91 8329046037',
       instagram: 'https://www.instagram.com/bhakti___46?igsh=OG92ZHZucHIwcWty',
       linkedin: 'https://www.linkedin.com/in/bhakti-kaner-b3a593336?utm_source=share_via&utm_content=profile&utm_medium=member_android',
-      photo: 'https://ui-avatars.com/api/?name=Bhakti+Kaner&background=random'
+      photo: '/image copy.png'
     },
     {
       name: 'Yash Pinjarkar',
       phone: '+91 9405702530',
-      instagram: '#',
-      linkedin: '#',
-      photo: 'https://ui-avatars.com/api/?name=Yash+Pinjarkar&background=random'
+      instagram: 'https://www.instagram.com/mr_yash_pinjarkar?igsh=MW40dWZlMTQwZmpodw==',
+      linkedin: 'https://www.linkedin.com/in/yash-pinjarkar-ab5576359?utm_source=share_via&utm_content=profile&utm_medium=member_android',
+      photo: '/image copy 2.png'
     },
     {
       name: 'Trisha Bobade',
       phone: '+91 8261936781',
-      instagram: '#',
-      linkedin: '#',
-      photo: 'https://ui-avatars.com/api/?name=Trisha+Bobade&background=random'
+      instagram: 'https://www.instagram.com/bobade_trisha_?igsh=MWRvYWM3d2ppZnE0Zg==',
+      linkedin: 'https://www.linkedin.com/in/trisha-bobade-373a393b3?utm_source=share_via&utm_content=profile&utm_medium=member_android',
+      photo: '/image copy 3.png'
     },
     {
       name: 'Sanket Thakare',
       phone: '+91 7057953073',
       instagram: 'https://www.instagram.com/__sanket_thakare_patil__?igsh=MW5pZHhvNTh2bzgwdQ==',
       linkedin: 'https://www.linkedin.com/in/sanket-thakare-1b6b49329?utm_source=share_via&utm_content=profile&utm_medium=member_android',
-      photo: '/sanket.jpg' // Local photo link
+      // To add a real photo, place your image (e.g., sanket.jpg) in the 'public' folder and use: photo: '/sanket.jpg'
+      photo: '/image.png'
     }
   ];
 
@@ -69,10 +70,6 @@ export default function DeveloperModal({ isOpen, onClose }) {
             <div key={index} className="dev-card">
               <div className="dev-photo-wrapper">
                 <img src={dev.photo} alt={dev.name} className="dev-photo" />
-                {/* The user requested a button for the profile photo to link/upload later */}
-                <button className="dev-photo-btn" title="Update Photo">
-                  <Camera size={12} />
-                </button>
               </div>
               <div className="dev-info">
                 <h3>{dev.name}</h3>
