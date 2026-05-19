@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { auth } from '../firebase';
+import { isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 
 const AuthContext = createContext();
 
@@ -10,10 +12,35 @@ export const AuthProvider = ({ children }) => {
   const [pendingAction, setPendingAction] = useState(null);
 
   useEffect(() => {
-    // Load session from local storage
-    const storedUser = localStorage.getItem('ai_sathi_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    // Check if coming from a Firebase Email Link
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+      let email = window.localStorage.getItem('emailForSignIn');
+      if (!email) {
+        email = window.prompt('Please provide your email for confirmation');
+      }
+      if (email) {
+        signInWithEmailLink(auth, email, window.location.href)
+          .then((result) => {
+            window.localStorage.removeItem('emailForSignIn');
+            const firebaseUser = result.user;
+            login({
+              name: firebaseUser.displayName || 'Email User',
+              email: firebaseUser.email,
+              avatar: firebaseUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=EmailUser`
+            });
+            // Clear URL of auth tokens to prevent issues if refreshed
+            window.history.replaceState(null, '', window.location.pathname);
+          })
+          .catch((error) => {
+            console.error("Error signing in with email link:", error.message);
+          });
+      }
+    } else {
+      // Load session from local storage
+      const storedUser = localStorage.getItem('ai_sathi_user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
     }
   }, []);
 
