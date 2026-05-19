@@ -5,7 +5,8 @@ import { X, Mail, Lock, User, Globe } from 'lucide-react';
 import './LoginModal.css';
 import { auth, googleProvider } from '../firebase';
 import { 
-  signInWithPopup, 
+  signInWithPopup,
+  signInWithRedirect,
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
   updateProfile,
@@ -87,15 +88,25 @@ export default function LoginModal() {
     try {
       setError('');
       setSuccessMsg('');
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
       
-      login({
-        name: user.displayName || 'Google User',
-        email: user.email,
-        avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${(user.displayName || 'User').replace(/\\s+/g, '')}`
-      });
-      resetState();
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // On mobile, use redirect because popups are often blocked or problematic
+        await signInWithRedirect(auth, googleProvider);
+        // The page will redirect away. The result will be handled in AuthContext.jsx
+      } else {
+        // On desktop, use popup
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+        
+        login({
+          name: user.displayName || 'Google User',
+          email: user.email,
+          avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${(user.displayName || 'User').replace(/\\s+/g, '')}`
+        });
+        resetState();
+      }
     } catch (err) {
       console.error("Google Login Error:", err.message);
       setError(language === 'mr' ? 'Google लॉगिन अयशस्वी' : 'Google Login Failed');

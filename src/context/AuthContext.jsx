@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth } from '../firebase';
-import { isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
+import { isSignInWithEmailLink, signInWithEmailLink, getRedirectResult } from 'firebase/auth';
 
 const AuthContext = createContext();
 
@@ -12,7 +12,21 @@ export const AuthProvider = ({ children }) => {
   const [pendingAction, setPendingAction] = useState(null);
 
   useEffect(() => {
-    // Check if coming from a Firebase Email Link
+    // 1. Check for Mobile Google Login Redirect Result
+    getRedirectResult(auth).then((result) => {
+      if (result) {
+        const firebaseUser = result.user;
+        login({
+          name: firebaseUser.displayName || 'Google User',
+          email: firebaseUser.email,
+          avatar: firebaseUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${(firebaseUser.displayName || 'User').replace(/\\s+/g, '')}`
+        });
+      }
+    }).catch((error) => {
+      console.error("Redirect Login Error:", error);
+    });
+
+    // 2. Check if coming from a Firebase Email Link
     if (isSignInWithEmailLink(auth, window.location.href)) {
       let email = window.localStorage.getItem('emailForSignIn');
       if (!email) {
@@ -28,7 +42,6 @@ export const AuthProvider = ({ children }) => {
               email: firebaseUser.email,
               avatar: firebaseUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=EmailUser`
             });
-            // Clear URL of auth tokens to prevent issues if refreshed
             window.history.replaceState(null, '', window.location.pathname);
           })
           .catch((error) => {
@@ -36,7 +49,7 @@ export const AuthProvider = ({ children }) => {
           });
       }
     } else {
-      // Load session from local storage
+      // 3. Load session from local storage
       const storedUser = localStorage.getItem('ai_sathi_user');
       if (storedUser) {
         setUser(JSON.parse(storedUser));
