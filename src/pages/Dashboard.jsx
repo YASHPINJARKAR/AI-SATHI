@@ -3,14 +3,15 @@ import { Link } from 'react-router-dom';
 import { MessageCircle, Building2, Calendar, Landmark, MapPin, Mic, TrendingUp, Users, Star, ArrowRight, Sparkles } from 'lucide-react';
 import { businesses, events } from '../data/mockData';
 import { useLanguage } from '../LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import DeveloperModal from '../components/DeveloperModal';
 import './Dashboard.css';
 
 const stats = [
-  { label: 'Businesses', value: '500+', icon: Building2, color: '#3949ab' },
-  { label: 'Gov Schemes', value: '10+', icon: Landmark, color: '#ff6d00' },
-  { label: 'Active Users', value: '7L+', icon: Users, color: '#00c853' },
-  { label: 'Events', value: '25+', icon: Calendar, color: '#e91e63' },
+  { key: 'businesses', value: '500+', icon: Building2, color: '#3949ab' },
+  { key: 'schemes', value: '10+', icon: Landmark, color: '#ff6d00' },
+  { key: 'aiChats', value: '10K+', icon: MessageCircle, color: '#00c853' },
+  { key: 'events', value: '25+', icon: Calendar, color: '#e91e63' },
 ];
 
 const features = [
@@ -24,6 +25,26 @@ const features = [
 
 export default function Dashboard() {
   const { language } = useLanguage();
+  const { user } = useAuth();
+  
+  const getStatLabel = (key) => {
+    const labels = {
+      en: {
+        businesses: 'Businesses',
+        schemes: 'Gov Schemes',
+        aiChats: 'AI Helpline Chats',
+        events: 'Events'
+      },
+      mr: {
+        businesses: 'व्यवसाय',
+        schemes: 'सरकारी योजना',
+        aiChats: 'AI हेल्पलाइन चॅट्स',
+        events: 'कार्यक्रम'
+      }
+    };
+    return (labels[language] || labels.en)[key];
+  };
+
   const topBusinesses = businesses.filter(b => b.rating >= 4.4).slice(0, 4);
   const upcomingEvents = events.slice(0, 3);
 
@@ -33,6 +54,21 @@ export default function Dashboard() {
 
   const handleFeedbackSubmit = (e) => {
     e.preventDefault();
+    
+    // Save to local storage
+    const feedbacks = JSON.parse(localStorage.getItem('ai_sathi_feedbacks') || '[]');
+    const newFeedback = {
+      id: 'fb_' + Date.now(),
+      userName: user ? user.name : 'Anonymous User',
+      userEmail: user ? user.email : 'N/A',
+      rating: feedback.rating,
+      view: feedback.view,
+      suggestion: feedback.suggestion,
+      submittedAt: new Date().toLocaleDateString()
+    };
+    feedbacks.unshift(newFeedback); // Add to the top
+    localStorage.setItem('ai_sathi_feedbacks', JSON.stringify(feedbacks));
+
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);
@@ -87,7 +123,7 @@ export default function Dashboard() {
               <stat.icon size={22} />
             </div>
             <div className="stat-value">{stat.value}</div>
-            <div className="stat-label">{stat.label}</div>
+            <div className="stat-label">{getStatLabel(stat.key)}</div>
           </div>
         ))}
       </section>

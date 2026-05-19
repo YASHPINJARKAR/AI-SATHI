@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
@@ -15,12 +15,19 @@ import LoginModal from './components/LoginModal';
 import ProfilePage from './pages/ProfilePage';
 import ParticleBackground from './components/ParticleBackground';
 import { LanguageProvider } from './LanguageContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import './App.css';
 
 function AppContent({ collapsed, setCollapsed, darkMode, setDarkMode }) {
   const location = useLocation();
+  const { user } = useAuth();
   const isLandingPage = location.pathname === '/';
+  const isAdminMode = user && user.role === 'admin';
+
+  // Force Admin users to ONLY access the standalone profile overview page and AI Chat
+  if (isAdminMode && location.pathname !== '/profile' && location.pathname !== '/chat') {
+    return <Navigate to="/profile" replace />;
+  }
 
   if (isLandingPage) {
     return (
@@ -33,17 +40,19 @@ function AppContent({ collapsed, setCollapsed, darkMode, setDarkMode }) {
   return (
     <div className="app-layout">
       <ParticleBackground isDarkMode={darkMode} />
-      <Sidebar
-        collapsed={collapsed}
-        setCollapsed={setCollapsed}
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-      />
-      <TopRightProfile />
+      {!isAdminMode && (
+        <Sidebar
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
+          darkMode={darkMode}
+          setDarkMode={setDarkMode}
+        />
+      )}
+      {!isAdminMode && <TopRightProfile />}
       <main 
-        className={`main-content ${collapsed ? 'collapsed' : ''}`}
+        className={`main-content ${collapsed ? 'collapsed' : ''} ${isAdminMode ? 'admin-mode' : ''}`}
         onClick={() => {
-          if (!collapsed && window.innerWidth > 768) {
+          if (!collapsed && window.innerWidth > 768 && !isAdminMode) {
             setCollapsed(true);
           }
         }}
@@ -55,11 +64,11 @@ function AppContent({ collapsed, setCollapsed, darkMode, setDarkMode }) {
           <Route path="/events" element={<Events />} />
           <Route path="/services" element={<Services />} />
           <Route path="/map" element={<MapPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile" element={<ProfilePage darkMode={darkMode} setDarkMode={setDarkMode} />} />
         </Routes>
       </main>
       <FloatingChatButton />
-      <BottomNav />
+      {!isAdminMode && <BottomNav />}
       <LoginModal />
     </div>
   );

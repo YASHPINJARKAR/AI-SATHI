@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../LanguageContext';
+import { useNavigate } from 'react-router-dom';
 import { X, Mail, Lock, User, Globe } from 'lucide-react';
 import './LoginModal.css';
 import { auth, googleProvider } from '../firebase';
@@ -17,6 +18,7 @@ import {
 export default function LoginModal() {
   const { isLoginModalOpen, closeLoginModal, login } = useAuth();
   const { language } = useLanguage();
+  const navigate = useNavigate();
   
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
   const [email, setEmail] = useState('');
@@ -24,6 +26,7 @@ export default function LoginModal() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [role, setRole] = useState('user'); // 'user' or 'admin'
 
   if (!isLoginModalOpen) return null;
 
@@ -53,6 +56,22 @@ export default function LoginModal() {
         
       } else {
         // Login Existing User
+        if (role === 'admin') {
+          if (email === 'aisummit31@gmail.com' && password === 'AiAmravati@31') {
+            login({
+              name: 'Sarthi Admin',
+              email: 'aisummit31@gmail.com',
+              role: 'admin',
+              avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin'
+            });
+            resetState();
+            navigate('/profile');
+          } else {
+            setError(language === 'mr' ? 'अवैध ऍडमिन क्रेडेंशियल्स' : 'Invalid Admin Credentials');
+          }
+          return;
+        }
+
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         
@@ -65,6 +84,7 @@ export default function LoginModal() {
         login({
           name: user.displayName || 'User',
           email: user.email,
+          role: 'user',
           avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${(user.displayName || 'User').replace(/\\s+/g, '')}`
         });
         resetState();
@@ -120,6 +140,7 @@ export default function LoginModal() {
     setName('');
     setError('');
     setSuccessMsg('');
+    setRole('user');
   };
 
   const handleClose = () => {
@@ -183,6 +204,28 @@ export default function LoginModal() {
                         placeholder={language === 'mr' ? 'तुमचे नाव प्रविष्ट करा' : 'Enter your full name'}
                         required
                       />
+                    </div>
+                  </div>
+                )}
+
+                {authMode === 'login' && (
+                  <div className="form-group">
+                    <label style={{marginBottom: '6px'}}>{language === 'mr' ? 'लॉगिन प्रकार' : 'Login As'}</label>
+                    <div className="role-selector-container">
+                      <button
+                        type="button"
+                        className={`role-selector-btn ${role === 'user' ? 'active' : ''}`}
+                        onClick={() => { setRole('user'); setError(''); }}
+                      >
+                        👤 {language === 'mr' ? 'वापरकर्ता' : 'User'}
+                      </button>
+                      <button
+                        type="button"
+                        className={`role-selector-btn ${role === 'admin' ? 'active' : ''}`}
+                        onClick={() => { setRole('admin'); setError(''); }}
+                      >
+                        🛡️ {language === 'mr' ? 'प्रशासक' : 'Admin'}
+                      </button>
                     </div>
                   </div>
                 )}

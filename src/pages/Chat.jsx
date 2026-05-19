@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Send, Mic, MicOff, Sparkles, Clock, Volume2, Bot, User, RefreshCw, Wifi, WifiOff, Image, X } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { quickActions } from '../data/mockData';
@@ -87,7 +88,8 @@ You have deep knowledge about Amravati including:
 
 export default function Chat() {
   const { language } = useLanguage();
-  const { requireAuth } = useAuth();
+  const { requireAuth, user } = useAuth();
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
   const [messages, setMessages] = useState([
@@ -416,6 +418,15 @@ export default function Chat() {
       {/* Header */}
       <div className="chat-header animate-fade-in-down">
         <div className="chat-header-left">
+          {user && user.role === 'admin' && (
+            <button 
+              className="btn btn-ghost admin-chat-back-btn" 
+              onClick={() => navigate('/profile')} 
+              style={{ marginRight: '16px', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', background: 'transparent', color: 'var(--text-primary)', fontWeight: '600', transition: 'all 0.2s ease' }}
+            >
+              ⬅️ {language === 'mr' ? 'प्रशासक पोर्टल' : 'Admin Portal'}
+            </button>
+          )}
           <div className="chat-avatar">
             <Sparkles size={24} />
           </div>

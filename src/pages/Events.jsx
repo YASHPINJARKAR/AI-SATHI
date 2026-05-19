@@ -77,6 +77,21 @@ export default function Events() {
     const errs = validate();
     if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
     requireAuth(() => {
+      // Save registration to local storage
+      const registrations = JSON.parse(localStorage.getItem('ai_sathi_event_registrations') || '[]');
+      const newReg = {
+        id: 'reg_' + Date.now(),
+        userName: form.name,
+        userEmail: form.email || 'N/A',
+        userPhone: form.mobile,
+        eventTitle: language === 'mr' ? selectedEvent.titleMarathi : selectedEvent.title,
+        people: form.people,
+        notes: form.notes || 'N/A',
+        registeredAt: new Date().toLocaleDateString()
+      };
+      registrations.unshift(newReg);
+      localStorage.setItem('ai_sathi_event_registrations', JSON.stringify(registrations));
+
       setModalStep('success');
     });
   };

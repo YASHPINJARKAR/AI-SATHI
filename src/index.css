@@ -230,6 +230,10 @@ input, textarea, select {
   margin-left: var(--sidebar-collapsed);
 }
 
+.main-content.admin-mode {
+  margin-left: 0 !important;
+}
+
 .page-container {
   flex: 1;
   padding: var(--space-xl);
