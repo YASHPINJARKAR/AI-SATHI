@@ -48,7 +48,7 @@ function AppContent({ collapsed, setCollapsed, darkMode, setDarkMode }) {
           setDarkMode={setDarkMode}
         />
       )}
-      {!isAdminMode && <TopRightProfile />}
+      {!isAdminMode && <TopRightProfile darkMode={darkMode} setDarkMode={setDarkMode} />}
       <main 
         className={`main-content ${collapsed ? 'collapsed' : ''} ${isAdminMode ? 'admin-mode' : ''}`}
         onClick={() => {

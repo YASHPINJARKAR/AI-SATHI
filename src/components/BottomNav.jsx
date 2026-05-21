@@ -4,11 +4,11 @@ import { useLanguage } from '../LanguageContext';
 import './BottomNav.css';
 
 const navItems = [
-  { path: '/dashboard', label: 'Home', labelMarathi: 'मुख्यपृष्ठ', icon: LayoutDashboard },
-  { path: '/directory', label: 'Directory', labelMarathi: 'डिरेक्टरी', icon: Building2 },
-  { path: '/chat', label: 'AI Chat', labelMarathi: 'AI चॅट', icon: MessageCircle },
-  { path: '/events', label: 'Events', labelMarathi: 'कार्यक्रम', icon: Calendar },
-  { path: '/map', label: 'Map', labelMarathi: 'नकाशा', icon: MapPin },
+  { path: '/dashboard', label: 'Home', labelMarathi: 'मुख्यपृष्ठ', labelHindi: 'होम', icon: LayoutDashboard },
+  { path: '/directory', label: 'Directory', labelMarathi: 'डिरेक्टरी', labelHindi: 'निर्देशिका', icon: Building2 },
+  { path: '/chat', label: 'AI Chat', labelMarathi: 'AI चॅट', labelHindi: 'एआई चैट', icon: MessageCircle },
+  { path: '/events', label: 'Events', labelMarathi: 'कार्यक्रम', labelHindi: 'कार्यक्रम', icon: Calendar },
+  { path: '/map', label: 'Map', labelMarathi: 'नकाशा', labelHindi: 'मानचित्र', icon: MapPin },
 ];
 
 export default function BottomNav() {
@@ -24,7 +24,7 @@ export default function BottomNav() {
         >
           <item.icon size={22} className="bottom-nav-icon" />
           <span className="bottom-nav-label">
-            {language === 'mr' ? item.labelMarathi : item.label}
+            {language === 'mr' ? item.labelMarathi : language === 'hi' ? item.labelHindi : item.label}
           </span>
         </NavLink>
       ))}

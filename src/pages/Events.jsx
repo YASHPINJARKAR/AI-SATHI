@@ -6,13 +6,13 @@ import { useAuth } from '../context/AuthContext';
 import './Events.css';
 
 const eventCategories = [
-  { id: 'all', label: 'All Events', icon: '📅' },
-  { id: 'tech', label: 'Tech', icon: '💻' },
-  { id: 'culture', label: 'Culture', icon: '🎭' },
-  { id: 'sports', label: 'Sports', icon: '⚽' },
-  { id: 'education', label: 'Education', icon: '🎓' },
-  { id: 'health', label: 'Health', icon: '🩺' },
-  { id: 'government', label: 'Government', icon: '🏛️' },
+  { id: 'all', label: 'All Events', labelMarathi: 'सर्व कार्यक्रम', labelHindi: 'सभी कार्यक्रम', icon: '📅' },
+  { id: 'tech', label: 'Tech', labelMarathi: 'तंत्रज्ञान', labelHindi: 'तकनीकी', icon: '💻' },
+  { id: 'culture', label: 'Culture', labelMarathi: 'संस्कृती', labelHindi: 'सांस्कृतिक', icon: '🎭' },
+  { id: 'sports', label: 'Sports', labelMarathi: 'क्रीडा', labelHindi: 'खेल', icon: '⚽' },
+  { id: 'education', label: 'Education', labelMarathi: 'शिक्षण', labelHindi: 'शिक्षा', icon: '🎓' },
+  { id: 'health', label: 'Health', labelMarathi: 'आरोग्य', labelHindi: 'स्वास्थ्य', icon: '🩺' },
+  { id: 'government', label: 'Government', labelMarathi: 'सरकारी', labelHindi: 'सरकारी', icon: '🏛️' },
 ];
 
 // Extra contact & details per event
@@ -44,7 +44,11 @@ export default function Events() {
   const filtered = events.filter(e => {
     const matchCat = activeCategory === 'all' || e.category === activeCategory;
     const q = searchQuery.toLowerCase();
-    const matchSearch = !q || e.title.toLowerCase().includes(q) || e.titleMarathi.includes(searchQuery) || e.category.includes(q);
+    const matchSearch = !q || 
+      e.title.toLowerCase().includes(q) || 
+      e.titleMarathi.includes(searchQuery) || 
+      (e.titleHindi && e.titleHindi.includes(searchQuery)) ||
+      e.category.includes(q);
     return matchCat && matchSearch;
   });
 
@@ -64,10 +68,18 @@ export default function Events() {
   // Validate form
   const validate = () => {
     const errs = {};
-    if (!form.name.trim()) errs.name = 'Name is required';
-    if (!/^\d{10}$/.test(form.mobile)) errs.mobile = 'Enter valid 10-digit mobile number';
-    if (form.email && !/\S+@\S+\.\S+/.test(form.email)) errs.email = 'Invalid email address';
-    if (form.people < 1) errs.people = 'At least 1 person required';
+    if (!form.name.trim()) {
+      errs.name = language === 'mr' ? 'नाव आवश्यक आहे' : language === 'hi' ? 'नाम आवश्यक है' : 'Name is required';
+    }
+    if (!/^\d{10}$/.test(form.mobile)) {
+      errs.mobile = language === 'mr' ? 'वैध १०-अंकी मोबाईल नंबर प्रविष्ट करा' : language === 'hi' ? 'वैध 10-अंकीय मोबाइल नंबर दर्ज करें' : 'Enter valid 10-digit mobile number';
+    }
+    if (form.email && !/\S+@\S+\.\S+/.test(form.email)) {
+      errs.email = language === 'mr' ? 'अवैध ईमेल पत्ता' : language === 'hi' ? 'अमान्य ईमेल पता' : 'Invalid email address';
+    }
+    if (form.people < 1) {
+      errs.people = language === 'mr' ? 'किमान १ व्यक्ती आवश्यक' : language === 'hi' ? 'कम से कम 1 व्यक्ति आवश्यक है' : 'At least 1 person required';
+    }
     return errs;
   };
 
@@ -84,7 +96,7 @@ export default function Events() {
         userName: form.name,
         userEmail: form.email || 'N/A',
         userPhone: form.mobile,
-        eventTitle: language === 'mr' ? selectedEvent.titleMarathi : selectedEvent.title,
+        eventTitle: language === 'mr' ? selectedEvent.titleMarathi : language === 'hi' ? (selectedEvent.titleHindi || selectedEvent.title) : selectedEvent.title,
         people: form.people,
         notes: form.notes || 'N/A',
         registeredAt: new Date().toLocaleDateString()
@@ -99,13 +111,14 @@ export default function Events() {
   // Share event
   const handleShare = (evt, e) => {
     if (e) e.stopPropagation();
-    const text = `🎉 ${evt.title}\n📅 ${new Date(evt.date).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })} at ${evt.time}\n📍 ${evt.location}\n💰 ${evt.price}\n\nShared via Ai Sathi App`;
+    const currentTitle = language === 'mr' ? evt.titleMarathi : language === 'hi' ? (evt.titleHindi || evt.title) : evt.title;
+    const text = `🎉 ${currentTitle}\n📅 ${new Date(evt.date).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })} at ${evt.time}\n📍 ${evt.location}\n💰 ${evt.price}\n\nShared via Ai Sathi App`;
     
     if (navigator.share) {
-      navigator.share({ title: evt.title, text }).catch(() => {});
+      navigator.share({ title: currentTitle, text }).catch(() => {});
     } else if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text).then(() => {
-        setShareToast(`"${evt.title}" copied to clipboard!`);
+        setShareToast(`"${currentTitle}" copied to clipboard!`);
         setTimeout(() => setShareToast(''), 3000);
       }).catch(() => {});
     } else {
@@ -119,7 +132,7 @@ export default function Events() {
         el.select();
         document.execCommand('copy');
         document.body.removeChild(el);
-        setShareToast(`"${evt.title}" copied to clipboard!`);
+        setShareToast(`"${currentTitle}" copied to clipboard!`);
         setTimeout(() => setShareToast(''), 3000);
       } catch (err) {
         console.error('Fallback copy failed', err);
@@ -140,11 +153,13 @@ export default function Events() {
 
       <div className="events-header animate-fade-in-down">
         <div>
-          <h1>{language === 'mr' ? 'कार्यक्रम आणि उपक्रम' : 'Events & Activities'}</h1>
+          <h1>
+            {language === 'mr' ? 'कार्यक्रम आणि उपक्रम' : language === 'hi' ? 'कार्यक्रम और गतिविधियाँ' : 'Events & Activities'}
+          </h1>
         </div>
         <div className="events-header-badge badge badge-accent">
           <Calendar size={14} />
-          {filtered.length} {language === 'mr' ? 'कार्यक्रम' : 'Events'}
+          {filtered.length} {language === 'mr' ? 'कार्यक्रम' : language === 'hi' ? 'कार्यक्रम' : 'Events'}
         </div>
       </div>
 
@@ -154,7 +169,13 @@ export default function Events() {
         <input
           type="text"
           className="search-input"
-          placeholder="Search events... / कार्यक्रम शोधा..."
+          placeholder={
+            language === 'mr' 
+              ? "कार्यक्रम शोधा..." 
+              : language === 'hi' 
+              ? "कार्यक्रम खोजें..." 
+              : "Search events..."
+          }
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           id="events-search"
@@ -170,7 +191,13 @@ export default function Events() {
             onClick={() => setActiveCategory(cat.id)}
           >
             <span>{cat.icon}</span>
-            <span>{cat.label}</span>
+            <span>
+              {language === 'mr' 
+                ? cat.labelMarathi 
+                : language === 'hi' 
+                ? cat.labelHindi 
+                : cat.label}
+            </span>
           </button>
         ))}
       </div>
@@ -188,7 +215,9 @@ export default function Events() {
                 <Tag size={10} />
                 {evt.category.charAt(0).toUpperCase() + evt.category.slice(1)}
               </span>
-              <h3 className="event-title">{language === 'mr' ? evt.titleMarathi : evt.title}</h3>
+              <h3 className="event-title">
+                {language === 'mr' ? evt.titleMarathi : language === 'hi' ? (evt.titleHindi || evt.title) : evt.title}
+              </h3>
               <p className="event-description">{evt.description}</p>
               <div className="event-meta-grid">
                 <div className="event-meta-item">
@@ -205,17 +234,19 @@ export default function Events() {
                 </div>
                 <div className="event-meta-item">
                   <Users size={14} />
-                  <span>{evt.attendees}+ {language === 'mr' ? 'उपस्थित' : 'Attendees'}</span>
+                  <span>
+                    {evt.attendees}+ {language === 'mr' ? 'उपस्थित' : language === 'hi' ? 'उपस्थित' : 'Attendees'}
+                  </span>
                 </div>
               </div>
             </div>
             <div className="event-card-footer">
               <button className="btn btn-accent btn-sm" style={{ flex: 1 }} onClick={() => openEvent(evt)}>
-                {language === 'mr' ? 'नोंदणी करा' : 'Register Now'}
+                {language === 'mr' ? 'नोंदणी करा' : language === 'hi' ? 'पंजीकरण करें' : 'Register Now'}
               </button>
               <button className="btn btn-outline btn-sm event-share-btn" onClick={(e) => handleShare(evt, e)}>
                 <Share2 size={14} />
-                {language === 'mr' ? 'शेअर' : 'Share'}
+                {language === 'mr' ? 'शेअर' : language === 'hi' ? 'शेयर' : 'Share'}
               </button>
             </div>
           </div>
@@ -225,8 +256,12 @@ export default function Events() {
       {filtered.length === 0 && (
         <div className="empty-state animate-fade-in">
           <span className="empty-icon">📅</span>
-          <h3>No events found</h3>
-          <p>Try a different category or search</p>
+          <h3>
+            {language === 'mr' ? 'कोणतेही कार्यक्रम आढळले नाहीत' : language === 'hi' ? 'कोई कार्यक्रम नहीं मिला' : 'No events found'}
+          </h3>
+          <p>
+            {language === 'mr' ? 'दुसरी श्रेणी किंवा शोध वापरून पहा' : language === 'hi' ? 'दूसरी श्रेणी या खोज शब्द आज़माएं' : 'Try a different category or search'}
+          </p>
         </div>
       )}
 
@@ -240,7 +275,9 @@ export default function Events() {
               <div className="event-modal-icon">{selectedEvent.image}</div>
               <div className="event-modal-header-info">
                 <span className={`event-price ${selectedEvent.price === 'Free' ? 'free' : 'paid'}`}>{selectedEvent.price}</span>
-                <h2 className="event-modal-title">{language === 'mr' ? selectedEvent.titleMarathi : selectedEvent.title}</h2>
+                <h2 className="event-modal-title">
+                  {language === 'mr' ? selectedEvent.titleMarathi : language === 'hi' ? (selectedEvent.titleHindi || selectedEvent.title) : selectedEvent.title}
+                </h2>
                 <span className="badge badge-primary">
                   <Tag size={10} /> {selectedEvent.category.charAt(0).toUpperCase() + selectedEvent.category.slice(1)}
                 </span>
@@ -257,57 +294,57 @@ export default function Events() {
                   <div className="event-info-item">
                     <Calendar size={16} />
                     <div>
-                      <span className="info-label">{language === 'mr' ? 'तारीख' : 'Date'}</span>
+                      <span className="info-label">{language === 'mr' ? 'तारीख' : language === 'hi' ? 'दिनांक' : 'Date'}</span>
                       <span className="info-value">{new Date(selectedEvent.date).toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
                     </div>
                   </div>
                   <div className="event-info-item">
                     <Clock size={16} />
                     <div>
-                      <span className="info-label">{language === 'mr' ? 'वेळ' : 'Time'}</span>
+                      <span className="info-label">{language === 'mr' ? 'वेळ' : language === 'hi' ? 'समय' : 'Time'}</span>
                       <span className="info-value">{selectedEvent.time}</span>
                     </div>
                   </div>
                   <div className="event-info-item">
                     <MapPin size={16} />
                     <div>
-                      <span className="info-label">{language === 'mr' ? 'ठिकाण' : 'Venue'}</span>
+                      <span className="info-label">{language === 'mr' ? 'ठिकाण' : language === 'hi' ? 'स्थान' : 'Venue'}</span>
                       <span className="info-value">{selectedEvent.location}</span>
                     </div>
                   </div>
                   <div className="event-info-item">
                     <Users size={16} />
                     <div>
-                      <span className="info-label">{language === 'mr' ? 'उपस्थित' : 'Expected Attendees'}</span>
+                      <span className="info-label">{language === 'mr' ? 'उपस्थित' : language === 'hi' ? 'अपेक्षित उपस्थिति' : 'Expected Attendees'}</span>
                       <span className="info-value">{selectedEvent.attendees}+ People</span>
                     </div>
                   </div>
                   <div className="event-info-item">
                     <IndianRupee size={16} />
                     <div>
-                      <span className="info-label">{language === 'mr' ? 'प्रवेश शुल्क' : 'Entry Fee'}</span>
+                      <span className="info-label">{language === 'mr' ? 'प्रवेश शुल्क' : language === 'hi' ? 'प्रवेश शुल्क' : 'Entry Fee'}</span>
                       <span className="info-value">{detail.fee}</span>
                     </div>
                   </div>
                   <div className="event-info-item">
                     <Phone size={16} />
                     <div>
-                      <span className="info-label">{language === 'mr' ? 'संपर्क' : 'Contact'}</span>
+                      <span className="info-label">{language === 'mr' ? 'संपर्क' : language === 'hi' ? 'संपर्क' : 'Contact'}</span>
                       <a className="info-value info-link" href={`tel:${detail.contact}`}>{detail.contact}</a>
                     </div>
                   </div>
                 </div>
 
                 <div className="event-organizer-tag">
-                  🏢 {language === 'mr' ? 'आयोजक:' : 'Organized by:'} <strong>{detail.organizer}</strong>
+                  🏢 {language === 'mr' ? 'आयोजक:' : language === 'hi' ? 'आयोजक:' : 'Organized by:'} <strong>{detail.organizer}</strong>
                 </div>
 
                 <div className="event-modal-actions">
                   <button className="btn btn-outline btn-sm" onClick={(e) => handleShare(selectedEvent, e)}>
-                    <Share2 size={16} /> {language === 'mr' ? 'शेअर करा' : 'Share Event'}
+                    <Share2 size={16} /> {language === 'mr' ? 'शेअर करा' : language === 'hi' ? 'शेयर करें' : 'Share Event'}
                   </button>
                   <button className="btn btn-accent" style={{ flex: 1 }} onClick={() => setModalStep('form')}>
-                    {language === 'mr' ? 'नोंदणी करा' : 'Register Now'} <ChevronRight size={16} />
+                    {language === 'mr' ? 'नोंदणी करा' : language === 'hi' ? 'पंजीकरण करें' : 'Register Now'} <ChevronRight size={16} />
                   </button>
                 </div>
               </div>
@@ -317,14 +354,14 @@ export default function Events() {
             {modalStep === 'form' && (
               <div className="event-modal-body">
                 <h3 className="form-section-title">
-                  📝 {language === 'mr' ? 'नोंदणी फॉर्म' : 'Registration Form'}
+                  📝 {language === 'mr' ? 'नोंदणी फॉर्म' : language === 'hi' ? 'पंजीकरण फॉर्म' : 'Registration Form'}
                 </h3>
                 <form onSubmit={handleSubmit} className="event-reg-form" noValidate>
                   <div className="form-group">
-                    <label><User size={14} /> {language === 'mr' ? 'पूर्ण नाव *' : 'Full Name *'}</label>
+                    <label><User size={14} /> {language === 'mr' ? 'पूर्ण नाव *' : language === 'hi' ? 'पूरा नाम *' : 'Full Name *'}</label>
                     <input
                       type="text"
-                      placeholder={language === 'mr' ? 'तुमचे पूर्ण नाव' : 'Enter your full name'}
+                      placeholder={language === 'mr' ? 'तुमचे पूर्ण नाव' : language === 'hi' ? 'अपना पूरा नाम दर्ज करें' : 'Enter your full name'}
                       value={form.name}
                       onChange={e => setForm({ ...form, name: e.target.value })}
                       className={formErrors.name ? 'input-error' : ''}
@@ -333,7 +370,7 @@ export default function Events() {
                   </div>
 
                   <div className="form-group">
-                    <label><Smartphone size={14} /> {language === 'mr' ? 'मोबाईल नंबर *' : 'Mobile Number *'}</label>
+                    <label><Smartphone size={14} /> {language === 'mr' ? 'मोबाईल नंबर *' : language === 'hi' ? 'मोबाइल नंबर *' : 'Mobile Number *'}</label>
                     <input
                       type="tel"
                       placeholder="10-digit mobile number"
@@ -346,7 +383,7 @@ export default function Events() {
                   </div>
 
                   <div className="form-group">
-                    <label>📧 {language === 'mr' ? 'ईमेल (पर्यायी)' : 'Email (Optional)'}</label>
+                    <label>📧 {language === 'mr' ? 'ईमेल (पर्यायी)' : language === 'hi' ? 'ईमेल (वैकल्पिक)' : 'Email (Optional)'}</label>
                     <input
                       type="email"
                       placeholder="your@email.com"
@@ -358,19 +395,21 @@ export default function Events() {
                   </div>
 
                   <div className="form-group">
-                    <label><Users size={14} /> {language === 'mr' ? 'किती जण येणार? *' : 'Number of People *'}</label>
+                    <label><Users size={14} /> {language === 'mr' ? 'किती जण येणार? *' : language === 'hi' ? 'लोगों की संख्या *' : 'Number of People *'}</label>
                     <div className="people-counter">
                       <button type="button" onClick={() => setForm(f => ({ ...f, people: Math.max(1, f.people - 1) }))}>−</button>
                       <span>{form.people}</span>
                       <button type="button" onClick={() => setForm(f => ({ ...f, people: Math.min(detail.maxPeople, f.people + 1) }))}>+</button>
                     </div>
-                    <span className="field-hint">Max {detail.maxPeople} people per registration</span>
+                    <span className="field-hint">
+                      Max {detail.maxPeople} {language === 'mr' ? 'नोंदणी प्रति लोक' : language === 'hi' ? 'लोग प्रति पंजीकरण' : 'people per registration'}
+                    </span>
                   </div>
 
                   <div className="form-group">
-                    <label>📝 {language === 'mr' ? 'टीप (पर्यायी)' : 'Special Notes (Optional)'}</label>
+                    <label>📝 {language === 'mr' ? 'टीप (पर्यायी)' : language === 'hi' ? 'विशेष टिप्पणी (वैकल्पिक)' : 'Special Notes (Optional)'}</label>
                     <textarea
-                      placeholder={language === 'mr' ? 'कोणतीही विशेष माहिती...' : 'Any special requirements...'}
+                      placeholder={language === 'mr' ? 'कोणतीही विशेष माहिती...' : language === 'hi' ? 'कोई विशेष निर्देश...' : 'Any special requirements...'}
                       value={form.notes}
                       onChange={e => setForm({ ...form, notes: e.target.value })}
                       rows={2}
@@ -379,7 +418,7 @@ export default function Events() {
 
                   {/* Fee Summary */}
                   <div className="fee-summary">
-                    <span>{language === 'mr' ? 'एकूण शुल्क:' : 'Total Fee:'}</span>
+                    <span>{language === 'mr' ? 'एकूण शुल्क:' : language === 'hi' ? 'कुल शुल्क:' : 'Total Fee:'}</span>
                     <strong>
                       {selectedEvent.price === 'Free' ? '🎟️ Free' :
                         `₹${parseInt(selectedEvent.price.replace(/[^\d]/g, '')) * form.people}`}
@@ -388,10 +427,10 @@ export default function Events() {
 
                   <div className="event-modal-actions">
                     <button type="button" className="btn btn-outline" onClick={() => setModalStep('detail')}>
-                      ← {language === 'mr' ? 'मागे' : 'Back'}
+                      ← {language === 'mr' ? 'मागे' : language === 'hi' ? 'पीछे' : 'Back'}
                     </button>
                     <button type="submit" className="btn btn-accent" style={{ flex: 1 }}>
-                      {language === 'mr' ? 'नोंदणी पूर्ण करा' : 'Confirm Registration'}
+                      {language === 'mr' ? 'नोंदणी पूर्ण करा' : language === 'hi' ? 'पंजीकरण पूर्ण करें' : 'Confirm Registration'}
                     </button>
                   </div>
                 </form>
@@ -404,10 +443,12 @@ export default function Events() {
                 <div className="success-icon-wrap">
                   <CheckCircle size={64} className="success-icon" />
                 </div>
-                <h3>{language === 'mr' ? '🎉 नोंदणी यशस्वी!' : '🎉 Registration Successful!'}</h3>
+                <h3>{language === 'mr' ? '🎉 नोंदणी यशस्वी!' : language === 'hi' ? '🎉 पंजीकरण सफल!' : '🎉 Registration Successful!'}</h3>
                 <p className="success-sub">
                   {language === 'mr'
                     ? `${form.name}, तुमची नोंदणी "${selectedEvent.titleMarathi}" साठी झाली!`
+                    : language === 'hi'
+                    ? `${form.name}, आपका पंजीकरण "${selectedEvent.titleHindi || selectedEvent.title}" के लिए सफल रहा!`
                     : `${form.name}, you're registered for "${selectedEvent.title}"!`}
                 </p>
                 <div className="success-details">
@@ -416,9 +457,15 @@ export default function Events() {
                   <div>👥 {form.people} {form.people === 1 ? 'Person' : 'People'}</div>
                   <div>📞 {form.mobile}</div>
                 </div>
-                <p className="success-hint">A confirmation will be sent to {form.mobile}</p>
+                <p className="success-hint">
+                  {language === 'mr' 
+                    ? `एक पुष्टीकरण संदेश ${form.mobile} वर पाठविला जाईल` 
+                    : language === 'hi' 
+                    ? `एक पुष्टीकरण संदेश ${form.mobile} पर भेजा जाएगा` 
+                    : `A confirmation will be sent to ${form.mobile}`}
+                </p>
                 <button className="btn btn-accent" style={{ width: '100%', marginTop: '16px' }} onClick={closeModal}>
-                  {language === 'mr' ? 'बंद करा' : 'Done'}
+                  {language === 'mr' ? 'बंद करा' : language === 'hi' ? 'हो गया' : 'Done'}
                 </button>
               </div>
             )}

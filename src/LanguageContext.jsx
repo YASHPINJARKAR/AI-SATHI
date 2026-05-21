@@ -12,12 +12,20 @@ export const LanguageProvider = ({ children }) => {
     document.documentElement.lang = language;
   }, [language]);
 
+  const changeLanguage = (lang) => {
+    setLanguage(lang);
+  };
+
   const toggleLanguage = () => {
-    setLanguage(prev => prev === 'en' ? 'mr' : 'en');
+    setLanguage(prev => {
+      if (prev === 'en') return 'hi';
+      if (prev === 'hi') return 'mr';
+      return 'en';
+    });
   };
 
   return (
-    <LanguageContext.Provider value={{ language, toggleLanguage }}>
+    <LanguageContext.Provider value={{ language, toggleLanguage, changeLanguage }}>
       {children}
     </LanguageContext.Provider>
   );

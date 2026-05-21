@@ -22,6 +22,7 @@ export default function Directory() {
       filtered = filtered.filter(b =>
         b.name.toLowerCase().includes(q) ||
         b.nameMarathi.includes(searchQuery) ||
+        (b.nameHindi && b.nameHindi.includes(searchQuery)) ||
         b.category.includes(q) ||
         b.tags.some(t => t.toLowerCase().includes(q))
       );
@@ -52,9 +53,11 @@ export default function Directory() {
       {/* Header */}
       <div className="directory-header animate-fade-in-down">
         <div>
-          <h1>{language === 'mr' ? 'व्यवसाय डिरेक्टरी' : 'Business Directory'}</h1>
+          <h1>
+            {language === 'mr' ? 'व्यवसाय डिरेक्टरी' : language === 'hi' ? 'व्यवसाय निर्देशिका' : 'Business Directory'}
+          </h1>
           <p className="marathi-text">
-            {filteredBusinesses.length} {language === 'mr' ? 'निकाल' : 'results'}
+            {filteredBusinesses.length} {language === 'mr' ? 'निकाल' : language === 'hi' ? 'परिणाम' : 'results'}
           </p>
         </div>
       </div>
@@ -66,7 +69,13 @@ export default function Directory() {
           <input
             type="text"
             className="search-input"
-            placeholder={language === 'mr' ? "व्यवसाय, रुग्णालये, रेस्टॉरंट्स शोधा..." : "Search businesses, hospitals, restaurants..."}
+            placeholder={
+              language === 'mr' 
+                ? "व्यवसाय, रुग्णालये, रेस्टॉरंट्स शोधा..." 
+                : language === 'hi' 
+                ? "व्यवसाय, अस्पताल, रेस्तरां खोजें..." 
+                : "Search businesses, hospitals, restaurants..."
+            }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             id="directory-search"
@@ -82,7 +91,13 @@ export default function Directory() {
                 onClick={() => setActiveCategory(cat.id)}
               >
                 <span>{cat.icon}</span>
-                <span>{language === 'mr' ? cat.labelMarathi || cat.label : cat.label}</span>
+                <span>
+                  {language === 'mr' 
+                    ? cat.labelMarathi || cat.label 
+                    : language === 'hi' 
+                    ? cat.labelHindi || cat.label 
+                    : cat.label}
+                </span>
               </button>
             ))}
           </div>
@@ -95,9 +110,15 @@ export default function Directory() {
               onChange={(e) => setSortBy(e.target.value)}
               id="sort-select"
             >
-              <option value="distance">{language === 'mr' ? 'सर्वात जवळचे' : 'Nearest First'}</option>
-              <option value="rating">{language === 'mr' ? 'सर्वाधिक रेट केलेले' : 'Highest Rated'}</option>
-              <option value="reviews">{language === 'mr' ? 'सर्वाधिक पुनरावलोकने' : 'Most Reviewed'}</option>
+              <option value="distance">
+                {language === 'mr' ? 'सर्वात जवळचे' : language === 'hi' ? 'निकटतम पहले' : 'Nearest First'}
+              </option>
+              <option value="rating">
+                {language === 'mr' ? 'सर्वाधिक रेट केलेले' : language === 'hi' ? 'सर्वोच्च रेटेड' : 'Highest Rated'}
+              </option>
+              <option value="reviews">
+                {language === 'mr' ? 'सर्वाधिक पुनरावलोकने' : language === 'hi' ? 'सर्वाधिक समीक्षाएं' : 'Most Reviewed'}
+              </option>
             </select>
             <ChevronDown size={14} />
           </div>
@@ -115,12 +136,14 @@ export default function Directory() {
             <div className="biz-card-header">
               <div className="biz-icon">{biz.image}</div>
               <div className="biz-info">
-                <h3 className="biz-name">{language === 'mr' ? biz.nameMarathi : biz.name}</h3>
+                <h3 className="biz-name">
+                  {language === 'mr' ? biz.nameMarathi : language === 'hi' ? (biz.nameHindi || biz.name) : biz.name}
+                </h3>
               </div>
               <span className={`biz-status ${biz.isOpen ? 'open' : 'closed'}`}>
                 {biz.isOpen 
-                  ? (language === 'mr' ? 'उघडे आहे' : 'Open') 
-                  : (language === 'mr' ? 'बंद आहे' : 'Closed')}
+                  ? (language === 'mr' ? 'उघडे आहे' : language === 'hi' ? 'खुला है' : 'Open') 
+                  : (language === 'mr' ? 'बंद आहे' : language === 'hi' ? 'बंद है' : 'Closed')}
               </span>
             </div>
 
@@ -162,12 +185,12 @@ export default function Directory() {
             <div className="biz-actions">
               <button className="btn btn-accent btn-sm" onClick={() => openDirections(biz)}>
                 <Navigation size={14} />
-                Get Directions
+                {language === 'mr' ? 'दिशा-निर्देश मिळवा' : language === 'hi' ? 'दिशा-निर्देश प्राप्त करें' : 'Get Directions'}
               </button>
               {biz.phone && (
                 <button className="btn btn-outline btn-sm" onClick={() => handleCall(biz.phone)}>
                   <Phone size={14} />
-                  Call
+                  {language === 'mr' ? 'कॉल करा' : language === 'hi' ? 'कॉल करें' : 'Call'}
                 </button>
               )}
             </div>
@@ -178,8 +201,12 @@ export default function Directory() {
       {filteredBusinesses.length === 0 && (
         <div className="empty-state animate-fade-in">
           <span className="empty-icon">🔍</span>
-          <h3>No results found</h3>
-          <p>Try a different search or category</p>
+          <h3>
+            {language === 'mr' ? 'कोणतेही निकाल आढळले नाहीत' : language === 'hi' ? 'कोई परिणाम नहीं मिला' : 'No results found'}
+          </h3>
+          <p>
+            {language === 'mr' ? 'दुसरा शोध किंवा श्रेणी वापरून पहा' : language === 'hi' ? 'दूसरा खोज शब्द या श्रेणी आज़माएं' : 'Try a different search or category'}
+          </p>
         </div>
       )}
     </div>

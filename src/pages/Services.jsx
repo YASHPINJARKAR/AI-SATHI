@@ -5,15 +5,15 @@ import { useLanguage } from '../LanguageContext';
 import './Services.css';
 
 const serviceCategories = [
-  { id: 'all', label: 'All Services', icon: '📋' },
-  { id: 'agriculture', label: 'Agriculture', icon: '🌾' },
-  { id: 'women', label: 'Women', icon: '👩' },
-  { id: 'health', label: 'Health', icon: '🏥' },
-  { id: 'food', label: 'Food & Supply', icon: '🍚' },
-  { id: 'documents', label: 'Documents', icon: '📜' },
-  { id: 'transport', label: 'Transport', icon: '🚗' },
-  { id: 'housing', label: 'Housing', icon: '🏠' },
-  { id: 'municipal', label: 'Municipal', icon: '🏢' },
+  { id: 'all', label: 'All Services', labelMarathi: 'सर्व सेवा', labelHindi: 'सभी सेवाएं', icon: '📋' },
+  { id: 'agriculture', label: 'Agriculture', labelMarathi: 'कृषी', labelHindi: 'कृषि', icon: '🌾' },
+  { id: 'women', label: 'Women', labelMarathi: 'महिला', labelHindi: 'महिला', icon: '👩' },
+  { id: 'health', label: 'Health', labelMarathi: 'आरोग्य', labelHindi: 'स्वास्थ्य', icon: '🏥' },
+  { id: 'food', label: 'Food & Supply', labelMarathi: 'अन्न आणि पुरवठा', labelHindi: 'खाद्य और आपूर्ति', icon: '🍚' },
+  { id: 'documents', label: 'Documents', labelMarathi: 'कागदपत्रे', labelHindi: 'दस्तावेज', icon: '📜' },
+  { id: 'transport', label: 'Transport', labelMarathi: 'वाहतूक', labelHindi: 'परिवहन', icon: '🚗' },
+  { id: 'housing', label: 'Housing', labelMarathi: 'गृहनिर्माण', labelHindi: 'आवास', icon: '🏠' },
+  { id: 'municipal', label: 'Municipal', labelMarathi: 'महानगरपालिका', labelHindi: 'नगर निगम', icon: '🏢' },
 ];
 
 export default function Services() {
@@ -25,7 +25,11 @@ export default function Services() {
   const filtered = governmentServices.filter(s => {
     const matchCat = activeCategory === 'all' || s.category === activeCategory;
     const q = searchQuery.toLowerCase();
-    const matchSearch = !q || s.name.toLowerCase().includes(q) || s.nameMarathi.includes(searchQuery) || s.description.toLowerCase().includes(q);
+    const matchSearch = !q || 
+      s.name.toLowerCase().includes(q) || 
+      s.nameMarathi.includes(searchQuery) || 
+      (s.nameHindi && s.nameHindi.includes(searchQuery)) ||
+      s.description.toLowerCase().includes(q);
     return matchCat && matchSearch;
   });
 
@@ -33,7 +37,9 @@ export default function Services() {
     <div className="page-container services-page">
       <div className="services-header animate-fade-in-down">
         <div>
-          <h1>{language === 'mr' ? 'सरकारी आणि सार्वजनिक सेवा' : 'Government & Public Services'}</h1>
+          <h1>
+            {language === 'mr' ? 'सरकारी आणि सार्वजनिक सेवा' : language === 'hi' ? 'सरकारी और सार्वजनिक सेवाएं' : 'Government & Public Services'}
+          </h1>
         </div>
       </div>
 
@@ -43,7 +49,13 @@ export default function Services() {
         <input
           type="text"
           className="search-input"
-          placeholder={language === 'mr' ? "योजना शोधा..." : "Search schemes, services..."}
+          placeholder={
+            language === 'mr' 
+              ? "योजना शोधा..." 
+              : language === 'hi' 
+              ? "योजना खोजें..." 
+              : "Search schemes, services..."
+          }
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           id="services-search"
@@ -59,7 +71,13 @@ export default function Services() {
             onClick={() => setActiveCategory(cat.id)}
           >
             <span>{cat.icon}</span>
-            <span>{cat.label}</span>
+            <span>
+              {language === 'mr' 
+                ? cat.labelMarathi 
+                : language === 'hi' 
+                ? cat.labelHindi 
+                : cat.label}
+            </span>
           </button>
         ))}
       </div>
@@ -75,7 +93,9 @@ export default function Services() {
             <div className="service-card-header" onClick={() => setExpandedId(expandedId === service.id ? null : service.id)}>
               <div className="service-icon">{service.icon}</div>
               <div className="service-info">
-                <h3>{language === 'mr' ? service.nameMarathi : service.name}</h3>
+                <h3>
+                  {language === 'mr' ? service.nameMarathi : language === 'hi' ? (service.nameHindi || service.name) : service.name}
+                </h3>
                 <p className="service-desc">{service.description}</p>
               </div>
               <button className="service-expand-btn">
@@ -87,13 +107,13 @@ export default function Services() {
               <div className="service-details animate-fade-in-up">
                 {/* Eligibility */}
                 <div className="service-detail-section">
-                  <h4><CheckCircle size={16} /> {language === 'mr' ? 'पात्रता' : 'Eligibility'}</h4>
+                  <h4><CheckCircle size={16} /> {language === 'mr' ? 'पात्रता' : language === 'hi' ? 'पात्रता' : 'Eligibility'}</h4>
                   <p>{service.eligibility}</p>
                 </div>
 
                 {/* Documents */}
                 <div className="service-detail-section">
-                  <h4><FileText size={16} /> {language === 'mr' ? 'आवश्यक कागदपत्रे' : 'Required Documents'}</h4>
+                  <h4><FileText size={16} /> {language === 'mr' ? 'आवश्यक कागदपत्रे' : language === 'hi' ? 'आवश्यक दस्तावेज' : 'Required Documents'}</h4>
                   <ul className="doc-list">
                     {service.documents.map((doc, i) => (
                       <li key={i}>{doc}</li>
@@ -103,7 +123,7 @@ export default function Services() {
 
                 {/* Steps */}
                 <div className="service-detail-section">
-                  <h4>📝 {language === 'mr' ? 'अर्ज कसा करावा' : 'How to Apply'}</h4>
+                  <h4>📝 {language === 'mr' ? 'अर्ज कसा करावा' : language === 'hi' ? 'आवेदन कैसे करें' : 'How to Apply'}</h4>
                   <ol className="steps-list">
                     {service.steps.map((step, i) => (
                       <li key={i}>
@@ -119,14 +139,18 @@ export default function Services() {
                   <div className="service-meta-card">
                     <MapPin size={16} />
                     <div>
-                      <span className="meta-label">Office</span>
+                      <span className="meta-label">
+                        {language === 'mr' ? 'कार्यालय' : language === 'hi' ? 'कार्यालय' : 'Office'}
+                      </span>
                       <span className="meta-value">{service.office}</span>
                     </div>
                   </div>
                   <div className="service-meta-card">
                     <Clock size={16} />
                     <div>
-                      <span className="meta-label">{language === 'mr' ? 'कालावधी' : 'Timeline'}</span>
+                      <span className="meta-label">
+                        {language === 'mr' ? 'कालावधी' : language === 'hi' ? 'समय सीमा' : 'Timeline'}
+                      </span>
                       <span className="meta-value">{service.timeline}</span>
                     </div>
                   </div>
@@ -143,7 +167,7 @@ export default function Services() {
                       style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                     >
                       <ExternalLink size={16} />
-                      {language === 'mr' ? 'अधिकृत वेबसाइटला भेट द्या' : 'Visit Official Website'}
+                      {language === 'mr' ? 'अधिकृत वेबसाइटला भेट द्या' : language === 'hi' ? 'आधिकारिक वेबसाइट पर जाएं' : 'Visit Official Website'}
                     </a>
                   </div>
                 )}
@@ -156,8 +180,12 @@ export default function Services() {
       {filtered.length === 0 && (
         <div className="empty-state animate-fade-in">
           <span className="empty-icon">🏛️</span>
-          <h3>No services found</h3>
-          <p>Try a different category or search term</p>
+          <h3>
+            {language === 'mr' ? 'कोणत्याही सेवा आढळल्या नाहीत' : language === 'hi' ? 'कोई सेवा नहीं मिली' : 'No services found'}
+          </h3>
+          <p>
+            {language === 'mr' ? 'दुसरी श्रेणी किंवा शोध शब्द वापरून पहा' : language === 'hi' ? 'दूसरी श्रेणी या खोज शब्द आज़माएं' : 'Try a different category or search term'}
+          </p>
         </div>
       )}
     </div>

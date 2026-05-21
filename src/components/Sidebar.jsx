@@ -9,22 +9,25 @@ import { useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 
 const navItems = [
-  { path: '/dashboard', label: 'Dashboard', labelMarathi: 'डॅशबोर्ड', icon: LayoutDashboard },
-  { path: '/chat', label: 'AI Chat', labelMarathi: 'AI चॅट', icon: MessageCircle },
-  { path: '/directory', label: 'Directory', labelMarathi: 'डिरेक्टरी', icon: Building2 },
-  { path: '/events', label: 'Events', labelMarathi: 'कार्यक्रम', icon: Calendar },
-  { path: '/services', label: 'Gov Services', labelMarathi: 'सरकारी सेवा', icon: Landmark },
-  { path: '/map', label: 'Map', labelMarathi: 'नकाशा', icon: MapPin },
+  { path: '/dashboard', label: 'Dashboard', labelMarathi: 'डॅशबोर्ड', labelHindi: 'डैशबोर्ड', icon: LayoutDashboard },
+  { path: '/chat', label: 'AI Chat', labelMarathi: 'AI चॅट', labelHindi: 'एआई चैट', icon: MessageCircle },
+  { path: '/directory', label: 'Directory', labelMarathi: 'डिरेक्टरी', labelHindi: 'निर्देशिका', icon: Building2 },
+  { path: '/events', label: 'Events', labelMarathi: 'कार्यक्रम', labelHindi: 'कार्यक्रम', icon: Calendar },
+  { path: '/services', label: 'Gov Services', labelMarathi: 'सरकारी सेवा', labelHindi: 'सरकारी सेवाएं', icon: Landmark },
+  { path: '/map', label: 'Map', labelMarathi: 'नकाशा', labelHindi: 'मानचित्र', icon: MapPin },
 ];
 
 export default function Sidebar({ collapsed, setCollapsed, darkMode, setDarkMode }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { language, toggleLanguage } = useLanguage();
+  const { language, changeLanguage } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [desktopLangOpen, setDesktopLangOpen] = useState(false);
 
   useEffect(() => {
     setMobileOpen(false);
+    setDesktopLangOpen(false);
   }, [location]);
 
   return (
@@ -37,11 +40,20 @@ export default function Sidebar({ collapsed, setCollapsed, darkMode, setDarkMode
         </div>
         
         <div className="mobile-top-actions">
-          <button className="mobile-action-btn" onClick={toggleLanguage} title={language === 'mr' ? 'English' : 'मराठी'}>
-            <Globe size={20} />
-          </button>
+          <div className="lang-dropdown-container">
+            <button className="mobile-action-btn" onClick={() => setLangDropdownOpen(!langDropdownOpen)} title="Language">
+              <Globe size={20} />
+            </button>
+            {langDropdownOpen && (
+              <div className="lang-dropdown-menu mobile-lang-dropdown">
+                <button onClick={() => { changeLanguage('en'); setLangDropdownOpen(false); }} className={language === 'en' ? 'active' : ''}>English</button>
+                <button onClick={() => { changeLanguage('hi'); setLangDropdownOpen(false); }} className={language === 'hi' ? 'active' : ''}>हिन्दी</button>
+                <button onClick={() => { changeLanguage('mr'); setLangDropdownOpen(false); }} className={language === 'mr' ? 'active' : ''}>मराठी</button>
+              </div>
+            )}
+          </div>
           
-          <button className="mobile-action-btn" onClick={() => navigate('/chat')} title={language === 'mr' ? 'आवाज' : 'Voice'}>
+          <button className="mobile-action-btn" onClick={() => navigate('/chat')} title={language === 'mr' ? 'आवाज' : language === 'hi' ? 'आवाज़' : 'Voice'}>
             <Mic size={20} />
           </button>
           
@@ -65,7 +77,7 @@ export default function Sidebar({ collapsed, setCollapsed, darkMode, setDarkMode
               <div className="brand-text">
                 <h1 className="brand-name">Ai Sathi</h1>
                 <span className="brand-tagline marathi-text">
-                  {language === 'mr' ? 'अमरावती सहाय्यक' : 'Amravati Guide'}
+                  {language === 'mr' ? 'अमरावती सहाय्यक' : language === 'hi' ? 'अमरावती सहायक' : 'Amravati Guide'}
                 </span>
               </div>
             )}
@@ -90,7 +102,9 @@ export default function Sidebar({ collapsed, setCollapsed, darkMode, setDarkMode
                   </span>
                   {!collapsed && (
                     <div className="nav-label-group">
-                      <span className="nav-label">{language === 'mr' ? item.labelMarathi : item.label}</span>
+                      <span className="nav-label">
+                        {language === 'mr' ? item.labelMarathi : language === 'hi' ? item.labelHindi : item.label}
+                      </span>
                     </div>
                   )}
                   {!collapsed && (
@@ -104,22 +118,63 @@ export default function Sidebar({ collapsed, setCollapsed, darkMode, setDarkMode
 
         {/* Footer */}
         <div className="sidebar-footer">
-          {/* Language Toggle */}
-          <button className="theme-toggle" onClick={toggleLanguage} id="lang-toggle">
-            <Globe size={18} />
-            {!collapsed && <span>{language === 'mr' ? 'English' : 'मराठी'}</span>}
-          </button>
+          {/* Language Selector */}
+          <div className="sidebar-lang-container">
+            <button 
+              className="sidebar-lang-btn" 
+              onClick={() => setDesktopLangOpen(!desktopLangOpen)} 
+              title={language === 'mr' ? 'भाषा बदला' : language === 'hi' ? 'भाषा बदलें' : 'Change Language'}
+              id="sidebar-lang-toggle"
+            >
+              <Globe size={18} />
+              {!collapsed && (
+                <>
+                  <span>
+                    {language === 'mr' ? 'मराठी' : language === 'hi' ? 'हिन्दी' : 'English'}
+                  </span>
+                  <span className="lang-chevron">▲</span>
+                </>
+              )}
+            </button>
+            {desktopLangOpen && (
+              <div className="lang-dropdown-menu up-dropdown sidebar-lang-dropdown">
+                <button onClick={() => { changeLanguage('en'); setDesktopLangOpen(false); }} className={language === 'en' ? 'active' : ''}>English</button>
+                <button onClick={() => { changeLanguage('hi'); setDesktopLangOpen(false); }} className={language === 'hi' ? 'active' : ''}>हिन्दी</button>
+                <button onClick={() => { changeLanguage('mr'); setDesktopLangOpen(false); }} className={language === 'mr' ? 'active' : ''}>मराठी</button>
+              </div>
+            )}
+          </div>
 
-          {/* Voice Button */}
-          <button className="sidebar-voice-btn" id="sidebar-voice-btn" title="Voice Assistant">
+          {/* Voice Assistant */}
+          <button 
+            className="sidebar-voice-btn" 
+            onClick={() => navigate('/chat?voice=true')}
+            title={language === 'mr' ? 'व्हॉइस असिस्टंट' : language === 'hi' ? 'वॉयस असिस्टेंट' : 'Voice Assistant'}
+            id="sidebar-voice-toggle"
+          >
             <Mic size={18} />
-            {!collapsed && <span>{language === 'mr' ? 'आवाज' : 'Voice'}</span>}
+            {!collapsed && (
+              <span>
+                {language === 'mr' ? 'व्हॉइस असिस्टंट' : language === 'hi' ? 'वॉयस असिस्टेंट' : 'Voice Assistant'}
+              </span>
+            )}
           </button>
 
           {/* Theme Toggle */}
-          <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)} id="theme-toggle">
+          <button 
+            className="theme-toggle" 
+            onClick={() => setDarkMode(!darkMode)} 
+            title={darkMode ? (language === 'mr' ? 'प्रकाश मोड' : language === 'hi' ? 'लाइट मोड' : 'Light Mode') : (language === 'mr' ? 'गडद मोड' : language === 'hi' ? 'डार्क मोड' : 'Dark Mode')}
+            id="sidebar-theme-toggle"
+          >
             {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-            {!collapsed && <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
+            {!collapsed && (
+              <span>
+                {darkMode 
+                  ? (language === 'mr' ? 'प्रकाश मोड' : language === 'hi' ? 'लाइट मोड' : 'Light Mode') 
+                  : (language === 'mr' ? 'गडद मोड' : language === 'hi' ? 'डार्क मोड' : 'Dark Mode')}
+              </span>
+            )}
           </button>
 
           {/* Collapse Toggle (desktop only) */}

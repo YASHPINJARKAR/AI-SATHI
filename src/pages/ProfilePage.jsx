@@ -9,7 +9,8 @@ import './ProfilePage.css';
 function AdminProfileView({ user, language, darkMode, setDarkMode }) {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const { toggleLanguage } = useLanguage();
+  const { changeLanguage } = useLanguage();
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
 
   const [usersList, setUsersList] = useState(() => JSON.parse(localStorage.getItem('ai_sathi_all_users') || '[]'));
   const [registrations, setRegistrations] = useState(() => JSON.parse(localStorage.getItem('ai_sathi_event_registrations') || '[]'));
@@ -41,6 +42,33 @@ function AdminProfileView({ user, language, darkMode, setDarkMode }) {
       noData: "कोणतीही माहिती उपलब्ध नाही",
       adminBadge: "मुख्य प्रशासक",
       chatOpt: "AI चॅट वर जा",
+      logoutOpt: "लॉग आउट"
+    },
+    hi: {
+      adminDashboard: "प्रशासक पोर्टल (Admin Portal)",
+      overview: "अवलोकन",
+      users: "पंजीकृत उपयोगकर्ता",
+      registrations: "कार्यक्रम पंजीकरण",
+      feedback: "उपयोगकर्ता प्रतिक्रिया",
+      totalUsers: "कुल उपयोगकर्ता",
+      eventRegs: "कार्यक्रम पंजीकरण",
+      totalFeedbacks: "कुल प्रतिक्रियाएं",
+      avgRating: "औसत रेटिंग",
+      name: "नाम",
+      email: "ईमेल",
+      phone: "फ़ोन",
+      joinedDate: "जुड़ने की तारीख",
+      event: "कार्यक्रम",
+      people: "लोग",
+      notes: "विशेष टिप्पणी",
+      rating: "रेटिंग",
+      comment: "टिप्पणी",
+      suggestion: "सुझाव",
+      actions: "कार्रवाई",
+      delete: "हटाएं",
+      noData: "कोई डेटा उपलब्ध नहीं है",
+      adminBadge: "मुख्य प्रशासक",
+      chatOpt: "AI चैट पर जाएं",
       logoutOpt: "लॉग आउट"
     },
     en: {
@@ -114,18 +142,29 @@ function AdminProfileView({ user, language, darkMode, setDarkMode }) {
           </div>
         </div>
         
-        {/* Dedicated Admin Actions: AI Chat, Language Switcher, Theme Switcher, and Logout */}
+        {/* Dedicated Admin Actions */}
         <div className="admin-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* Language Toggle */}
-          <button 
-            className="btn btn-ghost btn-sm admin-action-icon-btn" 
-            onClick={toggleLanguage}
-            title={language === 'mr' ? 'English' : 'मराठी'}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', background: 'transparent', color: 'var(--text-primary)' }}
-          >
-            <Globe size={16} />
-            <span style={{ fontSize: '0.85rem', fontWeight: '600' }}>{language === 'mr' ? 'English' : 'मराठी'}</span>
-          </button>
+          <div className="lang-dropdown-container">
+            <button 
+              className="btn btn-ghost btn-sm admin-action-icon-btn" 
+              onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+              title="Select Language"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', background: 'transparent', color: 'var(--text-primary)' }}
+            >
+              <Globe size={16} />
+              <span style={{ fontSize: '0.85rem', fontWeight: '600' }}>
+                {language === 'mr' ? 'मराठी' : language === 'hi' ? 'हिंदी' : 'English'}
+              </span>
+            </button>
+            {langDropdownOpen && (
+              <div className="lang-dropdown-menu mobile-lang-dropdown">
+                <button onClick={() => { changeLanguage('en'); setLangDropdownOpen(false); }} className={language === 'en' ? 'active' : ''}>English</button>
+                <button onClick={() => { changeLanguage('hi'); setLangDropdownOpen(false); }} className={language === 'hi' ? 'active' : ''}>हिन्दी</button>
+                <button onClick={() => { changeLanguage('mr'); setLangDropdownOpen(false); }} className={language === 'mr' ? 'active' : ''}>मराठी</button>
+              </div>
+            )}
+          </div>
           
           {/* Theme Toggle */}
           <button 
@@ -260,7 +299,9 @@ function AdminProfileView({ user, language, darkMode, setDarkMode }) {
                     </button>
                   </div>
                   <div className="reg-card-middle">
-                    <div className="reg-meta-badge">👥 {reg.people} {language === 'mr' ? 'लोक' : 'People'}</div>
+                    <div className="reg-meta-badge">
+                      👥 {reg.people} {language === 'mr' ? 'लोक' : language === 'hi' ? 'लोग' : 'People'}
+                    </div>
                     <div className="reg-meta-badge date-badge">📅 {reg.registeredAt}</div>
                   </div>
                   {reg.notes && reg.notes !== 'N/A' && (
@@ -365,8 +406,12 @@ export default function ProfilePage({ darkMode, setDarkMode }) {
   return (
     <div className="page-container profile-page">
       <div className="profile-header">
-        <h1>{language === 'mr' ? 'तुमची प्रोफाइल' : 'Your Profile'}</h1>
-        <p>{language === 'mr' ? 'तुमची वैयक्तिक माहिती व्यवस्थापित करा' : 'Manage your personal information'}</p>
+        <h1>
+          {language === 'mr' ? 'तुमची प्रोफाइल' : language === 'hi' ? 'आपकी प्रोफ़ाइल' : 'Your Profile'}
+        </h1>
+        <p>
+          {language === 'mr' ? 'तुमची वैयक्तिक माहिती व्यवस्थापित करा' : language === 'hi' ? 'अपनी व्यक्तिगत जानकारी प्रबंधित करें' : 'Manage your personal information'}
+        </p>
       </div>
 
       <div className="profile-content card">
@@ -390,13 +435,13 @@ export default function ProfilePage({ darkMode, setDarkMode }) {
           </div>
           <h3>{user.name}</h3>
           <p className="profile-role badge badge-primary">
-            {language === 'mr' ? 'प्रमाणित वापरकर्ता' : 'Verified User'}
+            {language === 'mr' ? 'प्रमाणित वापरकर्ता' : language === 'hi' ? 'सत्यापित उपयोगकर्ता' : 'Verified User'}
           </p>
         </div>
 
         <form className="profile-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label><User size={16} /> {language === 'mr' ? 'पूर्ण नाव' : 'Full Name'}</label>
+            <label><User size={16} /> {language === 'mr' ? 'पूर्ण नाव' : language === 'hi' ? 'पूरा नाम' : 'Full Name'}</label>
             <input 
               type="text" 
               name="name"
@@ -409,7 +454,7 @@ export default function ProfilePage({ darkMode, setDarkMode }) {
           </div>
 
           <div className="form-group">
-            <label><Mail size={16} /> {language === 'mr' ? 'ईमेल पत्ता' : 'Email Address'}</label>
+            <label><Mail size={16} /> {language === 'mr' ? 'ईमेल पत्ता' : language === 'hi' ? 'ईमेल पता' : 'Email Address'}</label>
             <input 
               type="email" 
               name="email"
@@ -421,7 +466,7 @@ export default function ProfilePage({ darkMode, setDarkMode }) {
           </div>
 
           <div className="form-group">
-            <label><Phone size={16} /> {language === 'mr' ? 'मोबाईल नंबर' : 'Mobile Number'}</label>
+            <label><Phone size={16} /> {language === 'mr' ? 'मोबाईल नंबर' : language === 'hi' ? 'मोबाइल नंबर' : 'Mobile Number'}</label>
             <input 
               type="tel" 
               name="phone"
@@ -433,7 +478,7 @@ export default function ProfilePage({ darkMode, setDarkMode }) {
           </div>
 
           <div className="form-group">
-            <label><Calendar size={16} /> {language === 'mr' ? 'वय' : 'Age'}</label>
+            <label><Calendar size={16} /> {language === 'mr' ? 'वय' : language === 'hi' ? 'उम्र' : 'Age'}</label>
             <input 
               type="number" 
               name="age"
@@ -441,14 +486,14 @@ export default function ProfilePage({ darkMode, setDarkMode }) {
               value={formData.age} 
               onChange={handleChange}
               disabled={!isEditing}
-              placeholder={language === 'mr' ? 'तुमचे वय प्रविष्ट करा' : 'Enter your age'}
+              placeholder={language === 'mr' ? 'तुमचे वय प्रविष्ट करा' : language === 'hi' ? 'अपनी उम्र दर्ज करें' : 'Enter your age'}
               min="1"
               max="120"
             />
           </div>
 
           <div className="form-group">
-            <label><Users size={16} /> {language === 'mr' ? 'लिंग' : 'Gender'}</label>
+            <label><Users size={16} /> {language === 'mr' ? 'लिंग' : language === 'hi' ? 'लिंग' : 'Gender'}</label>
             <select 
               name="gender" 
               className="input" 
@@ -456,15 +501,15 @@ export default function ProfilePage({ darkMode, setDarkMode }) {
               onChange={handleChange} 
               disabled={!isEditing}
             >
-              <option value="">{language === 'mr' ? 'निवडा...' : 'Select...'}</option>
-              <option value="Male">{language === 'mr' ? 'पुरुष' : 'Male'}</option>
-              <option value="Female">{language === 'mr' ? 'महिला' : 'Female'}</option>
-              <option value="Other">{language === 'mr' ? 'इतर' : 'Other'}</option>
+              <option value="">{language === 'mr' ? 'निवडा...' : language === 'hi' ? 'चुनें...' : 'Select...'}</option>
+              <option value="Male">{language === 'mr' ? 'पुरुष' : language === 'hi' ? 'पुरुष' : 'Male'}</option>
+              <option value="Female">{language === 'mr' ? 'महिला' : language === 'hi' ? 'महिला' : 'Female'}</option>
+              <option value="Other">{language === 'mr' ? 'इतर' : language === 'hi' ? 'अन्य' : 'Other'}</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label><MapPin size={16} /> {language === 'mr' ? 'पत्ता / स्थान' : 'Address / Location'}</label>
+            <label><MapPin size={16} /> {language === 'mr' ? 'पत्ता / स्थान' : language === 'hi' ? 'पता / स्थान' : 'Address / Location'}</label>
             <input 
               type="text" 
               name="location"
@@ -472,12 +517,12 @@ export default function ProfilePage({ darkMode, setDarkMode }) {
               value={formData.location} 
               onChange={handleChange}
               disabled={!isEditing}
-              placeholder={language === 'mr' ? 'उदा. अमरावती, महाराष्ट्र' : 'e.g. Amravati, Maharashtra'}
+              placeholder={language === 'mr' ? 'उदा. अमरावती, महाराष्ट्र' : language === 'hi' ? 'उदा. अमरावती, महाराष्ट्र' : 'e.g. Amravati, Maharashtra'}
             />
           </div>
 
           <div className="form-group">
-            <label><Briefcase size={16} /> {language === 'mr' ? 'व्यवसाय' : 'Profession'}</label>
+            <label><Briefcase size={16} /> {language === 'mr' ? 'व्यवसाय' : language === 'hi' ? 'व्यवसाय' : 'Profession'}</label>
             <select 
               name="profession" 
               className="input" 
@@ -485,12 +530,12 @@ export default function ProfilePage({ darkMode, setDarkMode }) {
               onChange={handleChange} 
               disabled={!isEditing}
             >
-              <option value="">{language === 'mr' ? 'निवडा...' : 'Select...'}</option>
-              <option value="Student">{language === 'mr' ? 'विद्यार्थी' : 'Student'}</option>
-              <option value="Professional">{language === 'mr' ? 'नोकरी करणारा' : 'Professional'}</option>
-              <option value="Business Owner">{language === 'mr' ? 'व्यावसायिक' : 'Business Owner'}</option>
-              <option value="Farmer">{language === 'mr' ? 'शेतकरी' : 'Farmer'}</option>
-              <option value="Other">{language === 'mr' ? 'इतर' : 'Other'}</option>
+              <option value="">{language === 'mr' ? 'निवडा...' : language === 'hi' ? 'चुनें...' : 'Select...'}</option>
+              <option value="Student">{language === 'mr' ? 'विद्यार्थी' : language === 'hi' ? 'छात्र' : 'Student'}</option>
+              <option value="Professional">{language === 'mr' ? 'नोकरी करणारा' : language === 'hi' ? 'पेशेवर' : 'Professional'}</option>
+              <option value="Business Owner">{language === 'mr' ? 'व्यावसायिक' : language === 'hi' ? 'व्यवसायी' : 'Business Owner'}</option>
+              <option value="Farmer">{language === 'mr' ? 'शेतकरी' : language === 'hi' ? 'किसान' : 'Farmer'}</option>
+              <option value="Other">{language === 'mr' ? 'इतर' : language === 'hi' ? 'अन्य' : 'Other'}</option>
             </select>
           </div>
 
@@ -498,16 +543,16 @@ export default function ProfilePage({ darkMode, setDarkMode }) {
             {isEditing ? (
               <>
                 <button type="button" className="btn btn-ghost" onClick={() => setIsEditing(false)}>
-                  {language === 'mr' ? 'रद्द करा' : 'Cancel'}
+                  {language === 'mr' ? 'रद्द करा' : language === 'hi' ? 'रद्द करें' : 'Cancel'}
                 </button>
                 <button type="submit" className="btn btn-primary">
                   <Save size={16} />
-                  {language === 'mr' ? 'जतन करा' : 'Save Changes'}
+                  {language === 'mr' ? 'जतन करा' : language === 'hi' ? 'सहेजें' : 'Save Changes'}
                 </button>
               </>
             ) : (
               <button type="button" className="btn btn-outline" onClick={() => setIsEditing(true)}>
-                {language === 'mr' ? 'प्रोफाइल संपादित करा' : 'Edit Profile'}
+                {language === 'mr' ? 'प्रोफाइल संपादित करा' : language === 'hi' ? 'प्रोफ़ाइल संपादित करें' : 'Edit Profile'}
               </button>
             )}
           </div>

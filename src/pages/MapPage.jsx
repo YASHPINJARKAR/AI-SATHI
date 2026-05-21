@@ -79,7 +79,13 @@ export default function MapPage() {
       const mockLocation = [20.9320, 77.7523];
       setUserLocation(mockLocation);
       setFlyTo(mockLocation);
-      setLocationError(language === 'mr' ? 'असुरक्षित नेटवर्कमुळे लोकेशन सिमुलेट केले आहे (Mocked).' : 'GPS blocked on local Wi-Fi. Using mock location.');
+      setLocationError(
+        language === 'mr' 
+          ? 'असुरक्षित नेटवर्कमुळे लोकेशन सिमुलेट केले आहे (Mocked).' 
+          : language === 'hi' 
+          ? 'असुरक्षित नेटवर्क के कारण स्थान सिम्युलेट किया गया है।' 
+          : 'GPS blocked on local Wi-Fi. Using mock location.'
+      );
     };
 
     if (navigator.geolocation && (window.isSecureContext || window.location.hostname === 'localhost')) {
@@ -115,30 +121,83 @@ export default function MapPage() {
     };
   }, []);
 
-  // Fetch from Nominatim for global Amravati search
+  // Fetch from Nominatim for global Amravati search with robust query fallbacks
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (searchQuery.length > 2) {
         setIsSearching(true);
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery + ', Amravati, Maharashtra')}&format=json&limit=15`);
-          const data = await res.json();
-          const mapped = data.map(item => ({
-            id: item.place_id,
-            name: item.display_name.split(',')[0],
-            nameMarathi: item.display_name.split(',')[0],
-            address: item.display_name,
-            lat: parseFloat(item.lat),
-            lng: parseFloat(item.lon),
-            category: 'external',
-            rating: '-',
-            distance: 'Web Result',
-            isOpen: true,
-            image: '📍'
-          }));
-          setExternalResults(mapped);
+          const q = searchQuery.trim();
+          let data = [];
+
+          // Step 1: Try exact query in Amravati, Maharashtra
+          try {
+            const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q + ', Amravati, Maharashtra')}&format=json&limit=15`;
+            const res = await fetch(url, { headers: { 'Accept-Language': 'en,mr,hi' } });
+            data = await res.json();
+          } catch (e) {
+            console.error("First geocoding attempt failed", e);
+          }
+
+          // Step 2: Fallback - if 0 results, check if query contains common honorifics/prefixes and strip them
+          if ((!data || data.length === 0) && /(shri|shree|sri|saint|st\.?|dr\.?)\b/i.test(q)) {
+            try {
+              const cleanQ = q.replace(/(shri\.|shree\.|sri\.|shri|shree|sri|saint|st\.?|dr\.?)\s+/gi, '').trim();
+              if (cleanQ.length > 2) {
+                const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cleanQ + ', Amravati, Maharashtra')}&format=json&limit=15`;
+                const res = await fetch(url, { headers: { 'Accept-Language': 'en,mr,hi' } });
+                data = await res.json();
+              }
+            } catch (e) {
+              console.error("Stripped prefix geocoding failed", e);
+            }
+          }
+
+          // Step 3: Fallback - if still 0 results, try with a broader query "q, Amravati"
+          if (!data || data.length === 0) {
+            try {
+              const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q + ', Amravati')}&format=json&limit=15`;
+              const res = await fetch(url, { headers: { 'Accept-Language': 'en,mr,hi' } });
+              data = await res.json();
+            } catch (e) {
+              console.error("Broader geocoding failed", e);
+            }
+          }
+
+          // Step 4: Fallback - if still 0 results, try searching the terms with Amravati prepended
+          if (!data || data.length === 0) {
+            try {
+              const cleanQ = q.replace(/(shri\.|shree\.|sri\.|shri|shree|sri)\s+/gi, '').trim();
+              const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent('Amravati ' + cleanQ)}&format=json&limit=15`;
+              const res = await fetch(url, { headers: { 'Accept-Language': 'en,mr,hi' } });
+              data = await res.json();
+            } catch (e) {
+              console.error("Prepended geocoding failed", e);
+            }
+          }
+
+          if (data && data.length > 0) {
+            const mapped = data.map(item => ({
+              id: `ext-${item.place_id}`, // Ensure unique string prefix to prevent collision with mock numbers
+              name: item.display_name.split(',')[0],
+              nameMarathi: item.display_name.split(',')[0],
+              nameHindi: item.display_name.split(',')[0],
+              address: item.display_name,
+              lat: parseFloat(item.lat),
+              lng: parseFloat(item.lon),
+              category: 'external',
+              rating: '-',
+              distance: 'Web Result',
+              isOpen: true,
+              image: '📍'
+            }));
+            setExternalResults(mapped);
+          } else {
+            setExternalResults([]);
+          }
         } catch (e) {
-          console.error("Geocoding failed", e);
+          console.error("Geocoding routine failed", e);
+          setExternalResults([]);
         }
         setIsSearching(false);
       } else {
@@ -158,6 +217,7 @@ export default function MapPage() {
       list = list.filter(b =>
         b.name.toLowerCase().includes(q) ||
         b.nameMarathi.includes(searchQuery) ||
+        (b.nameHindi && b.nameHindi.includes(searchQuery)) ||
         b.category.includes(q)
       );
     }
@@ -173,7 +233,13 @@ export default function MapPage() {
 
   const calculateRoute = async (biz) => {
     if (!userLocation) {
-      alert(language === 'mr' ? "मार्ग शोधण्यासाठी कृपया तुमचे लोकेशन चालू करा." : "Please enable location to find a route.");
+      alert(
+        language === 'mr' 
+          ? "मार्ग शोधण्यासाठी कृपया तुमचे लोकेशन चालू करा." 
+          : language === 'hi' 
+          ? "मार्ग देखने के लिए कृपया अपना स्थान चालू करें।" 
+          : "Please enable location to find a route."
+      );
       return;
     }
     try {
@@ -184,11 +250,23 @@ export default function MapPage() {
         setRouteCoords(coords);
         setSelectedBiz(biz);
       } else {
-        alert(language === 'mr' ? "मार्ग सापडला नाही." : "Route not found.");
+        alert(
+          language === 'mr' 
+            ? "मार्ग सापडला नाही." 
+            : language === 'hi' 
+            ? "मार्ग नहीं मिला।" 
+            : "Route not found."
+        );
       }
     } catch(e) {
       console.error("Routing error", e);
-      alert(language === 'mr' ? "मार्ग शोधताना त्रुटी आली." : "Error calculating route.");
+      alert(
+        language === 'mr' 
+          ? "मार्ग शोधताना त्रुटी आली." 
+          : language === 'hi' 
+          ? "मार्ग खोजने में त्रुटि हुई।" 
+          : "Error calculating route."
+      );
     }
   };
 
@@ -204,7 +282,9 @@ export default function MapPage() {
         {/* Sidebar Panel */}
         <div className="map-panel">
           <div className="map-panel-header">
-            <h2>{language === 'mr' ? 'अमरावती नकाशा' : 'Explore Amravati'}</h2>
+            <h2>
+              {language === 'mr' ? 'अमरावती नकाशा' : language === 'hi' ? 'अमरावती नक्शा' : 'Explore Amravati'}
+            </h2>
           </div>
 
           <div className="map-search" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -212,7 +292,13 @@ export default function MapPage() {
               <Search size={18} className="search-icon" style={{ position: 'absolute', left: '12px' }} />
               <input
                 type="text"
-                placeholder={language === 'mr' ? "ठिकाणे शोधा..." : "Search places..."}
+                placeholder={
+                  language === 'mr' 
+                    ? "ठिकाणे शोधा..." 
+                    : language === 'hi' 
+                    ? "स्थान खोजें..." 
+                    : "Search places..."
+                }
                 className="search-input"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -223,14 +309,20 @@ export default function MapPage() {
             <button 
               onClick={requestLocation} 
               className="btn btn-primary btn-sm"
-              title={language === 'mr' ? 'माझे लोकेशन शोधा' : 'Find My Location'}
+              title={
+                language === 'mr' 
+                  ? 'माझे लोकेशन शोधा' 
+                  : language === 'hi' 
+                  ? 'मेरा स्थान खोजें' 
+                  : 'Find My Location'
+              }
               style={{ padding: '8px 12px', flexShrink: 0 }}
             >
               <Navigation size={18} />
             </button>
           </div>
           {locationError && <p style={{ color: 'var(--danger)', fontSize: '0.8rem', marginTop: '4px' }}>{locationError}</p>}
-          {isSearching && <p style={{ color: 'var(--primary)', fontSize: '0.8rem', marginTop: '4px' }}>{language === 'mr' ? 'शोधत आहे...' : 'Searching web...'}</p>}
+          {isSearching && <p style={{ color: 'var(--primary)', fontSize: '0.8rem', marginTop: '4px' }}>{language === 'mr' ? 'शोधत आहे...' : language === 'hi' ? 'खोज रहा है...' : 'Searching web...'}</p>}
 
           <div className="map-categories">
             {categories.map(cat => (
@@ -240,32 +332,86 @@ export default function MapPage() {
                 onClick={() => setActiveCategory(cat.id)}
               >
                 <span>{cat.icon}</span>
-                <span>{language === 'mr' ? cat.labelMarathi || cat.label : cat.label}</span>
+                <span>
+                  {language === 'mr' 
+                    ? cat.labelMarathi || cat.label 
+                    : language === 'hi' 
+                    ? cat.labelHindi || cat.label 
+                    : cat.label}
+                </span>
               </button>
             ))}
           </div>
 
           <div className="map-results">
-            <p className="map-results-count">{filtered.length} {language === 'mr' ? 'ठिकाणे सापडली' : 'places found'}</p>
-            {filtered.map(biz => (
-              <div
-                key={biz.id}
-                className={`map-result-item ${selectedBiz?.id === biz.id ? 'selected' : ''}`}
-                onClick={() => handleBizClick(biz)}
-              >
-                <div className="map-result-icon">{biz.image}</div>
-                <div className="map-result-info">
-                  <h4>{language === 'mr' ? biz.nameMarathi : biz.name}</h4>
-                  <div className="map-result-meta">
-                    <span><Star size={11} fill="currentColor" /> {biz.rating}</span>
-                    <span><MapPin size={11} /> {biz.distance}</span>
-                    <span className={`status-dot ${biz.isOpen ? 'open' : 'closed'}`}>
-                      {biz.isOpen ? (language === 'mr' ? 'उघडे आहे' : 'Open') : (language === 'mr' ? 'बंद आहे' : 'Closed')}
-                    </span>
+            <p className="map-results-count">
+              {filtered.length} {language === 'mr' ? 'ठिकाणे सापडली' : language === 'hi' ? 'स्थान मिले' : 'places found'}
+            </p>
+            {filtered.map(biz => {
+              const isSelected = selectedBiz?.id === biz.id;
+              return (
+                <div
+                  key={biz.id}
+                  className={`map-result-item ${isSelected ? 'selected' : ''}`}
+                  onClick={() => handleBizClick(biz)}
+                >
+                  <div className="map-result-main">
+                    <div className="map-result-icon">{biz.image}</div>
+                    <div className="map-result-info">
+                      <h4>
+                        {language === 'mr' ? biz.nameMarathi : language === 'hi' ? (biz.nameHindi || biz.name) : biz.name}
+                      </h4>
+                      <div className="map-result-meta">
+                        <span><Star size={11} fill="currentColor" /> {biz.rating}</span>
+                        <span><MapPin size={11} /> {biz.distance}</span>
+                        <span className={`status-dot ${biz.isOpen ? 'open' : 'closed'}`}>
+                          {biz.isOpen 
+                            ? (language === 'mr' ? 'उघडे आहे' : language === 'hi' ? 'खुला है' : 'Open') 
+                            : (language === 'mr' ? 'बंद आहे' : language === 'hi' ? 'बंद है' : 'Closed')}
+                        </span>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Expanded Sidebar Action Panel when item is clicked */}
+                  {isSelected && (
+                    <div 
+                      className="map-result-actions-panel"
+                      onClick={(e) => e.stopPropagation()} // Prevent list item trigger
+                    >
+                      <p className="actions-panel-address">
+                        <strong>📍 Address:</strong> {biz.address}
+                      </p>
+                      {biz.phone && (
+                        <p className="actions-panel-phone">
+                          <strong>📞 Phone:</strong> {biz.phone}
+                        </p>
+                      )}
+                      <div className="actions-panel-buttons">
+                        <button
+                          className="popup-directions-btn btn-primary"
+                          onClick={() => calculateRoute(biz)}
+                        >
+                          🛣️ {language === 'mr' ? 'मार्ग दाखवा' : language === 'hi' ? 'मार्ग दिखाएं' : 'Show Route'}
+                        </button>
+                        <button
+                          className="popup-directions-btn btn-outline"
+                          onClick={() => openDirections(biz)}
+                          style={{
+                            background: 'transparent',
+                            border: '1px solid var(--border-light)',
+                            color: 'var(--text-primary)',
+                            marginTop: '8px'
+                          }}
+                        >
+                          🧭 {language === 'mr' ? 'गुगल मॅप्स' : language === 'hi' ? 'गूगल मैप्स' : 'Google Maps'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -285,7 +431,9 @@ export default function MapPage() {
             {/* Live Location Marker */}
             {userLocation && (
               <Marker position={userLocation} icon={userIcon}>
-                <Popup>{language === 'mr' ? 'तुम्ही येथे आहात' : 'You are here'}</Popup>
+                <Popup>
+                  {language === 'mr' ? 'तुम्ही येथे आहात' : language === 'hi' ? 'आप यहाँ हैं' : 'You are here'}
+                </Popup>
               </Marker>
             )}
 
@@ -301,8 +449,12 @@ export default function MapPage() {
               <Marker key={`${biz.id}-${idx}`} position={[biz.lat, biz.lng]} icon={selectedBiz?.id === biz.id ? destIcon : new L.Icon.Default()}>
                 <Popup>
                   <div className="map-popup">
-                    <h4>{biz.image} {language === 'mr' ? biz.nameMarathi : biz.name}</h4>
-                    <p>⭐ {biz.rating} • {biz.distance} • {biz.isOpen ? '🟢 ' + (language === 'mr' ? 'उघडे आहे' : 'Open') : '🔴 ' + (language === 'mr' ? 'बंद आहे' : 'Closed')}</p>
+                    <h4>
+                      {biz.image} {language === 'mr' ? biz.nameMarathi : language === 'hi' ? (biz.nameHindi || biz.name) : biz.name}
+                    </h4>
+                    <p>
+                      ⭐ {biz.rating} • {biz.distance} • {biz.isOpen ? '🟢 ' + (language === 'mr' ? 'उघडे आहे' : language === 'hi' ? 'खुला है' : 'Open') : '🔴 ' + (language === 'mr' ? 'बंद आहे' : language === 'hi' ? 'बंद है' : 'Closed')}
+                    </p>
                     <p>📍 {biz.address.substring(0, 50)}{biz.address.length > 50 ? '...' : ''}</p>
                     {biz.phone && <p>📞 {biz.phone}</p>}
                     
@@ -312,14 +464,14 @@ export default function MapPage() {
                         onClick={() => calculateRoute(biz)}
                         style={{ flex: 1, padding: '8px', borderRadius: '8px', border: 'none', background: 'var(--primary)', color: 'white', cursor: 'pointer' }}
                       >
-                        🛣️ {language === 'mr' ? 'मार्ग दाखवा' : 'Show Route'}
+                        🛣️ {language === 'mr' ? 'मार्ग दाखवा' : language === 'hi' ? 'मार्ग दिखाएं' : 'Show Route'}
                       </button>
                       <button
                         className="popup-directions-btn btn-outline"
                         onClick={() => openDirections(biz)}
                         style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer' }}
                       >
-                        🧭 {language === 'mr' ? 'गुगल मॅप्स' : 'Google Maps'}
+                        🧭 {language === 'mr' ? 'गुगल मॅप्स' : language === 'hi' ? 'गूगल मैप्स' : 'Google Maps'}
                       </button>
                     </div>
                   </div>

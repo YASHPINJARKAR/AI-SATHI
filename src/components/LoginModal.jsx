@@ -50,7 +50,13 @@ export default function LoginModal() {
         // Sign them out immediately so they have to verify first
         await signOut(auth);
         
-        setSuccessMsg(language === 'mr' ? 'नोंदणी यशस्वी! कृपया तुमचा ईमेल तपासा आणि सत्यापित करा.' : 'Registration successful! Please check your email to verify your account.');
+        setSuccessMsg(
+          language === 'mr' 
+            ? 'नोंदणी यशस्वी! कृपया तुमचा ईमेल तपासा आणि सत्यापित करा.' 
+            : language === 'hi'
+            ? 'पंजीकरण सफल! कृपया अपना ईमेल सत्यापित करने के लिए इनबॉक्स जांचें।'
+            : 'Registration successful! Please check your email to verify your account.'
+        );
         setAuthMode('login');
         setPassword('');
         
@@ -67,7 +73,13 @@ export default function LoginModal() {
             resetState();
             navigate('/profile');
           } else {
-            setError(language === 'mr' ? 'अवैध ऍडमिन क्रेडेंशियल्स' : 'Invalid Admin Credentials');
+            setError(
+              language === 'mr' 
+                ? 'अवैध ऍडमिन क्रेडेंशियल्स' 
+                : language === 'hi'
+                ? 'अमान्य एडमिन क्रेडेंशियल्स'
+                : 'Invalid Admin Credentials'
+            );
           }
           return;
         }
@@ -77,7 +89,13 @@ export default function LoginModal() {
         
         if (!user.emailVerified) {
           await signOut(auth);
-          setError(language === 'mr' ? 'कृपया प्रथम तुमचा ईमेल सत्यापित करा.' : 'Please verify your email address first. Check your inbox.');
+          setError(
+            language === 'mr' 
+              ? 'कृपया प्रथम तुमचा ईमेल सत्यापित करा.' 
+              : language === 'hi'
+              ? 'कृपया पहले अपना ईमेल सत्यापित करें।'
+              : 'Please verify your email address first. Check your inbox.'
+          );
           return;
         }
         
@@ -85,7 +103,7 @@ export default function LoginModal() {
           name: user.displayName || 'User',
           email: user.email,
           role: 'user',
-          avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${(user.displayName || 'User').replace(/\\s+/g, '')}`
+          avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${(user.displayName || 'User').replace(/\s+/g, '')}`
         });
         resetState();
       }
@@ -93,11 +111,29 @@ export default function LoginModal() {
       console.error("Auth Error:", err.message);
       // Simplify error messages
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
-        setError(language === 'mr' ? 'चुकीचा ईमेल किंवा पासवर्ड' : 'Invalid email or password');
+        setError(
+          language === 'mr' 
+            ? 'चुकीचा ईमेल किंवा पासवर्ड' 
+            : language === 'hi'
+            ? 'गलत ईमेल या पासवर्ड'
+            : 'Invalid email or password'
+        );
       } else if (err.code === 'auth/email-already-in-use') {
-        setError(language === 'mr' ? 'हा ईमेल आधीच नोंदणीकृत आहे' : 'This email is already registered');
+        setError(
+          language === 'mr' 
+            ? 'हा ईमेल आधीच नोंदणीकृत आहे' 
+            : language === 'hi'
+            ? 'यह ईमेल पहले से ही पंजीकृत है'
+            : 'This email is already registered'
+        );
       } else if (err.code === 'auth/weak-password') {
-        setError(language === 'mr' ? 'पासवर्ड किमान ६ अक्षरांचा असावा' : 'Password should be at least 6 characters');
+        setError(
+          language === 'mr' 
+            ? 'पासवर्ड किमान ६ अक्षरांचा असावा' 
+            : language === 'hi'
+            ? 'पासवर्ड कम से कम 6 अक्षरों का होना चाहिए'
+            : 'Password should be at least 6 characters'
+        );
       } else {
         setError(err.message);
       }
@@ -123,13 +159,19 @@ export default function LoginModal() {
         login({
           name: user.displayName || 'Google User',
           email: user.email,
-          avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${(user.displayName || 'User').replace(/\\s+/g, '')}`
+          avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${(user.displayName || 'User').replace(/\s+/g, '')}`
         });
         resetState();
       }
     } catch (err) {
       console.error("Google Login Error:", err.message);
-      setError(language === 'mr' ? `Google लॉगिन अयशस्वी: ${err.message}` : `Google Login Failed: ${err.message}`);
+      setError(
+        language === 'mr' 
+          ? `Google लॉगिन अयशस्वी: ${err.message}` 
+          : language === 'hi'
+          ? `Google लॉगिन विफल रहा: ${err.message}`
+          : `Google Login Failed: ${err.message}`
+      );
     }
   };
 
@@ -156,10 +198,14 @@ export default function LoginModal() {
         </button>
 
         <div className="modal-header">
-          <h2>{authMode === 'login' 
-            ? (language === 'mr' ? 'लॉगिन करा' : 'Login') 
-            : (language === 'mr' ? 'नवीन खाते तयार करा' : 'Create an Account')}</h2>
-          <p>{language === 'mr' ? 'सुरू ठेवण्यासाठी कृपया लॉगिन करा' : 'Please authenticate to continue'}</p>
+          <h2>
+            {authMode === 'login' 
+              ? (language === 'mr' ? 'लॉगिन करा' : language === 'hi' ? 'लॉगिन करें' : 'Login') 
+              : (language === 'mr' ? 'नवीन खाते तयार करा' : language === 'hi' ? 'नया खाता बनाएं' : 'Create an Account')}
+          </h2>
+          <p>
+            {language === 'mr' ? 'सुरू ठेवण्यासाठी कृपया लॉगिन करा' : language === 'hi' ? 'जारी रखने के लिए कृपया लॉगिन करें' : 'Please authenticate to continue'}
+          </p>
         </div>
 
         <div className="modal-body">
@@ -169,14 +215,14 @@ export default function LoginModal() {
               onClick={() => { setAuthMode('login'); setError(''); setSuccessMsg(''); }}
             >
               <Lock size={18} />
-              {language === 'mr' ? 'लॉगिन' : 'Login'}
+              {language === 'mr' ? 'लॉगिन' : language === 'hi' ? 'लॉगिन' : 'Login'}
             </button>
             <button 
               className={`auth-tab ${authMode === 'register' ? 'active' : ''}`}
               onClick={() => { setAuthMode('register'); setError(''); setSuccessMsg(''); }}
             >
               <User size={18} />
-              {language === 'mr' ? 'नोंदणी करा' : 'Register'}
+              {language === 'mr' ? 'नोंदणी करा' : language === 'hi' ? 'पंजीकरण करें' : 'Register'}
             </button>
           </div>
 
@@ -187,21 +233,21 @@ export default function LoginModal() {
               <div className="auth-success-screen" style={{textAlign: 'center', padding: '20px 0'}}>
                 <div style={{color: 'green', fontSize: '16px', marginBottom: '20px'}}>{successMsg}</div>
                 <button type="button" className="btn btn-outline full-width" onClick={() => {setSuccessMsg(''); setAuthMode('login');}}>
-                  {language === 'mr' ? 'लॉगिन वर परत जा' : 'Back to Login'}
+                  {language === 'mr' ? 'लॉगिन वर परत जा' : language === 'hi' ? 'लॉगिन पर वापस जाएं' : 'Back to Login'}
                 </button>
               </div>
             ) : (
               <>
                 {authMode === 'register' && (
                   <div className="form-group">
-                    <label>{language === 'mr' ? 'पूर्ण नाव' : 'Full Name'}</label>
+                    <label>{language === 'mr' ? 'पूर्ण नाव' : language === 'hi' ? 'पूरा नाम' : 'Full Name'}</label>
                     <div className="input-group">
                       <input 
                         type="text" 
                         className="input" 
                         value={name} 
                         onChange={(e) => setName(e.target.value)} 
-                        placeholder={language === 'mr' ? 'तुमचे नाव प्रविष्ट करा' : 'Enter your full name'}
+                        placeholder={language === 'mr' ? 'तुमचे नाव प्रविष्ट करा' : language === 'hi' ? 'अपना पूरा नाम दर्ज करें' : 'Enter your full name'}
                         required
                       />
                     </div>
@@ -210,28 +256,28 @@ export default function LoginModal() {
 
                 {authMode === 'login' && (
                   <div className="form-group">
-                    <label style={{marginBottom: '6px'}}>{language === 'mr' ? 'लॉगिन प्रकार' : 'Login As'}</label>
+                    <label style={{marginBottom: '6px'}}>{language === 'mr' ? 'लॉगिन प्रकार' : language === 'hi' ? 'लॉगिन प्रकार' : 'Login As'}</label>
                     <div className="role-selector-container">
                       <button
                         type="button"
                         className={`role-selector-btn ${role === 'user' ? 'active' : ''}`}
                         onClick={() => { setRole('user'); setError(''); }}
                       >
-                        👤 {language === 'mr' ? 'वापरकर्ता' : 'User'}
+                        👤 {language === 'mr' ? 'वापरकर्ता' : language === 'hi' ? 'उपयोगकर्ता' : 'User'}
                       </button>
                       <button
                         type="button"
                         className={`role-selector-btn ${role === 'admin' ? 'active' : ''}`}
                         onClick={() => { setRole('admin'); setError(''); }}
                       >
-                        🛡️ {language === 'mr' ? 'प्रशासक' : 'Admin'}
+                        🛡️ {language === 'mr' ? 'प्रशासक' : language === 'hi' ? 'प्रशासक' : 'Admin'}
                       </button>
                     </div>
                   </div>
                 )}
 
                 <div className="form-group">
-                  <label>{language === 'mr' ? 'ईमेल पत्ता' : 'Email Address'}</label>
+                  <label>{language === 'mr' ? 'ईमेल पत्ता' : language === 'hi' ? 'ईमेल पता' : 'Email Address'}</label>
                   <div className="input-group">
                     <input 
                       type="email" 
@@ -245,14 +291,14 @@ export default function LoginModal() {
                 </div>
 
                 <div className="form-group">
-                  <label>{language === 'mr' ? 'पासवर्ड' : 'Password'}</label>
+                  <label>{language === 'mr' ? 'पासवर्ड' : language === 'hi' ? 'पासवर्ड' : 'Password'}</label>
                   <div className="input-group">
                     <input 
                       type="password" 
                       className="input" 
                       value={password} 
                       onChange={(e) => setPassword(e.target.value)} 
-                      placeholder={language === 'mr' ? 'पासवर्ड प्रविष्ट करा' : 'Enter your password'}
+                      placeholder={language === 'mr' ? 'पासवर्ड प्रविष्ट करा' : language === 'hi' ? 'अपना पासवर्ड दर्ज करें' : 'Enter your password'}
                       required
                       minLength={6}
                     />
@@ -261,20 +307,20 @@ export default function LoginModal() {
 
                 <button type="submit" className="btn btn-primary btn-lg full-width">
                   {authMode === 'login' 
-                    ? (language === 'mr' ? 'लॉगिन करा' : 'Login') 
-                    : (language === 'mr' ? 'नोंदणी करा' : 'Register')}
+                    ? (language === 'mr' ? 'लॉगिन करा' : language === 'hi' ? 'लॉगिन करें' : 'Login') 
+                    : (language === 'mr' ? 'नोंदणी करा' : language === 'hi' ? 'पंजीकरण करें' : 'Register')}
                 </button>
               </>
             )}
           </form>
 
           <div className="auth-divider">
-            <span>{language === 'mr' ? 'किंवा' : 'OR'}</span>
+            <span>{language === 'mr' ? 'किंवा' : language === 'hi' ? 'या' : 'OR'}</span>
           </div>
 
           <button className="btn btn-outline btn-lg full-width google-btn" onClick={handleGoogleLogin}>
             <Globe size={20} className="google-icon" />
-            {language === 'mr' ? 'Google द्वारे सुरू ठेवा' : 'Continue with Google'}
+            {language === 'mr' ? 'Google द्वारे सुरू ठेवा' : language === 'hi' ? 'Google के साथ जारी रखें' : 'Continue with Google'}
           </button>
         </div>
       </div>

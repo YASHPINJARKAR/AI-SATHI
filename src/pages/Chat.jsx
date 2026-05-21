@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Send, Mic, MicOff, Sparkles, Clock, Volume2, Bot, User, RefreshCw, Wifi, WifiOff, Image, X } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { quickActions } from '../data/mockData';
@@ -18,7 +18,6 @@ const SYSTEM_PROMPT = `You are **Ai Sathi** (AI साथी), a smart, friendly
 - Warm, polite, and approachable
 - Use emojis naturally to make conversations engaging 😊
 - Be concise but informative
-- When the user speaks in Marathi, respond in Marathi. When in English, respond in English.
 
 ## Your Knowledge Base — Amravati City & General Knowledge
 You have deep knowledge about Amravati including:
@@ -90,15 +89,24 @@ export default function Chat() {
   const { language } = useLanguage();
   const { requireAuth, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
+  
+  const getWelcomeText = useCallback(() => {
+    if (language === 'mr') {
+      return 'नमस्कार! मी **Ai Sathi** 🤖, तुमचा अमरावती डिजिटल सहाय्यक.\n\nमी तुम्हाला खालील गोष्टींमध्ये मदत करू शकतो:\n- 🏥 हॉस्पिटल व आरोग्य सेवा\n- 🍽️ रेस्टॉरंट व खाद्यपदार्थ\n- 🏛️ सरकारी योजना व सेवा\n- 📚 शिक्षण व कोचिंग\n- 📍 दिशा व ठिकाणे\n\nकाहीही विचारा!';
+    } else if (language === 'hi') {
+      return 'नमस्ते! मैं **Ai Sathi** 🤖, आपका अमरावती डिजिटल सहायक।\n\nमैं आपकी निम्नलिखित चीज़ों में मदद कर सकता हूँ:\n- 🏥 अस्पताल और स्वास्थ्य सेवा\n- 🍽️ रेस्तरां और भोजन\n- 🏛️ सरकारी योजनाएं और सेवाएं\n- 📚 शिक्षा और कोचिंग\n- 📍 दिशा-निर्देश और स्थान\n\nकुछ भी पूछें!';
+    }
+    return 'Hello! I\'m **Ai Sathi** 🤖, your Amravati digital assistant.\n\nI can help you with:\n- 🏥 Hospitals & Healthcare\n- 🍽️ Restaurants & Food\n- 🏛️ Government Schemes & Services\n- 📚 Education & Coaching\n- 📍 Directions & Places\n\nAsk me anything!';
+  }, [language]);
+
   const [messages, setMessages] = useState([
     {
       id: 1,
       type: 'bot',
-      text: language === 'mr'
-        ? 'नमस्कार! मी **Ai Sathi** 🤖, तुमचा अमरावती डिजिटल सहाय्यक.\n\nमी तुम्हाला खालील गोष्टींमध्ये मदत करू शकतो:\n- 🏥 हॉस्पिटल व आरोग्य सेवा\n- 🍽️ रेस्टॉरंट व खाद्यपदार्थ\n- 🏛️ सरकारी योजना व सेवा\n- 📚 शिक्षण व कोचिंग\n- 📍 दिशा व ठिकाणे\n\nकाहीही विचारा!'
-        : 'Hello! I\'m **Ai Sathi** 🤖, your Amravati digital assistant.\n\nI can help you with:\n- 🏥 Hospitals & Healthcare\n- 🍽️ Restaurants & Food\n- 🏛️ Government Schemes & Services\n- 📚 Education & Coaching\n- 📍 Directions & Places\n\nAsk me anything!',
+      text: getWelcomeText(),
       timestamp: new Date()
     }
   ]);
@@ -118,15 +126,13 @@ export default function Chat() {
         return [{
           id: 1,
           type: 'bot',
-          text: language === 'mr'
-            ? 'नमस्कार! मी **Ai Sathi** 🤖, तुमचा अमरावती डिजिटल सहाय्यक.\n\nमी तुम्हाला खालील गोष्टींमध्ये मदत करू शकतो:\n- 🏥 हॉस्पिटल व आरोग्य सेवा\n- 🍽️ रेस्टॉरंट व खाद्यपदार्थ\n- 🏛️ सरकारी योजना व सेवा\n- 📚 शिक्षण व कोचिंग\n- 📍 दिशा व ठिकाणे\n\nकाहीही विचारा!'
-            : 'Hello! I\'m **Ai Sathi** 🤖, your Amravati digital assistant.\n\nI can help you with:\n- 🏥 Hospitals & Healthcare\n- 🍽️ Restaurants & Food\n- 🏛️ Government Schemes & Services\n- 📚 Education & Coaching\n- 📍 Directions & Places\n\nAsk me anything!',
+          text: getWelcomeText(),
           timestamp: new Date()
         }];
       }
       return prev;
     });
-  }, [language]);
+  }, [language, getWelcomeText]);
 
   // ── Initialize Gemini Chat Session ────────────────────────────
   useEffect(() => {
@@ -167,7 +173,7 @@ export default function Chat() {
     const cleanText = text.replace(/[*_#\[\]]/g, '').replace(/\n/g, '. ');
     const utterance = new SpeechSynthesisUtterance(cleanText);
     
-    const targetLang = language === 'mr' ? 'mr-IN' : 'en-IN';
+    const targetLang = language === 'mr' ? 'mr-IN' : language === 'hi' ? 'hi-IN' : 'en-IN';
     utterance.lang = targetLang;
     
     // Get voices (might need to handle async loading in some browsers)
@@ -177,14 +183,14 @@ export default function Chat() {
       // Look for exact match, then language match, then any Indian voice
       const preferredVoice = voices.find(v => v.lang.replace('_', '-').toLowerCase() === targetLang.toLowerCase()) 
                           || voices.find(v => v.lang.toLowerCase().startsWith(language.toLowerCase()))
-                          || (language === 'mr' ? voices.find(v => v.lang.includes('IN')) : null);
+                          || (language === 'mr' || language === 'hi' ? voices.find(v => v.lang.includes('IN')) : null);
                           
       if (preferredVoice) {
         utterance.voice = preferredVoice;
       }
     }
     
-    utterance.rate = language === 'mr' ? 0.9 : 1.0; 
+    utterance.rate = (language === 'mr' || language === 'hi') ? 0.9 : 1.0; 
     window.speechSynthesis.speak(utterance);
   }, [isVoiceMode, language]);
   
@@ -214,6 +220,8 @@ export default function Chat() {
 
       const langHint = language === 'mr' 
         ? ' (CRITICAL: You MUST respond entirely in Marathi language using Devanagari script. Do not use English words.)' 
+        : language === 'hi'
+        ? ' (CRITICAL: You MUST respond entirely in Hindi language using Devanagari script. Do not use English words.)'
         : ' (Please respond entirely in English.)';
       const fullQuery = query + langHint;
       
@@ -245,6 +253,8 @@ export default function Chat() {
       setIsConnected(false);
       return language === 'mr'
         ? '⚠️ माफ करा, AI सेवेशी जोडणी करताना अडचण आली. कृपया पुन्हा प्रयत्न करा.'
+        : language === 'hi'
+        ? '⚠️ क्षमा करें, एआई सेवा से जुड़ने में समस्या हुई। कृपया पुनः प्रयास करें।'
         : '⚠️ Sorry, I had trouble connecting to the AI service. Please try again.';
     }
   };
@@ -284,10 +294,12 @@ export default function Chat() {
   };
 
   // ── Voice Input ───────────────────────────────────────────────
-  const toggleVoice = () => {
+  const toggleVoice = useCallback(() => {
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
       alert(language === 'mr'
         ? 'हा ब्राउझर व्हॉइस रिकग्निशन सपोर्ट करत नाही. कृपया Chrome वापरा.'
+        : language === 'hi'
+        ? 'यह ब्राउज़र वॉयस रिकग्निशन का समर्थन नहीं करता है। कृपया Chrome का उपयोग करें।'
         : 'Voice recognition is not supported in this browser. Please use Chrome.');
       return;
     }
@@ -297,7 +309,7 @@ export default function Chat() {
       return;
     }
     const recognition = new SpeechRecognition();
-    recognition.lang = language === 'mr' ? 'mr-IN' : 'en-IN';
+    recognition.lang = language === 'mr' ? 'mr-IN' : language === 'hi' ? 'hi-IN' : 'en-IN';
     recognition.continuous = false;
     recognition.interimResults = false;
     
@@ -320,9 +332,11 @@ export default function Chat() {
       if (e.error === 'not-allowed' && !window.isSecureContext) {
         alert(language === 'mr' 
           ? 'मायक्रोफोनला परवानगी नाकारली आहे. (लोकल HTTP नेटवर्कवर ब्राऊजर माइक ब्लॉक करतो. कृपया टाइप करा.)'
+          : language === 'hi'
+          ? 'माइक्रोफ़ोन एक्सेस अस्वीकृत। (मोबाइल ब्राउज़र लोकल HTTP टेस्टिंग नेटवर्क पर माइक ब्लॉक करते हैं। कृपया टाइप करें।)'
           : 'Microphone access denied. (Mobile browsers block the mic on local HTTP testing networks. Please type instead.)');
       } else if (e.error === 'not-allowed') {
-        alert(language === 'mr' ? 'कृपया मायक्रोफोनला परवानगी द्या.' : 'Please allow microphone access.');
+        alert(language === 'mr' ? 'कृपया मायक्रोफोनला परवानगी द्या.' : language === 'hi' ? 'कृपया माइक्रोफ़ोन एक्सेस की अनुमति दें।' : 'Please allow microphone access.');
       }
     };
     
@@ -334,7 +348,22 @@ export default function Chat() {
       console.error('Speech recognition start error:', err);
       setIsListening(false);
     }
-  };
+  }, [language, isListening, handleSend]);
+
+  // Auto-trigger voice assistant if URL has ?voice=true parameter
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('voice') === 'true') {
+      const timer = setTimeout(() => {
+        toggleVoice();
+      }, 300);
+      
+      // Clean up the URL query parameter
+      navigate('/chat', { replace: true });
+      
+      return () => clearTimeout(timer);
+    }
+  }, [location.search, navigate, toggleVoice]);
 
   // ── Clear Chat ────────────────────────────────────────────────
   const clearChat = () => {
@@ -344,6 +373,8 @@ export default function Chat() {
         type: 'bot',
         text: language === 'mr'
           ? '🔄 चॅट रीसेट झाला! मी तुम्हाला कशी मदत करू शकतो?'
+          : language === 'hi'
+          ? '🔄 चैट रीसेट हो गया! मैं आपकी क्या मदद कर सकता हूँ?'
           : '🔄 Chat reset! How can I help you?',
         timestamp: new Date()
       }
@@ -424,19 +455,19 @@ export default function Chat() {
               onClick={() => navigate('/profile')} 
               style={{ marginRight: '16px', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', background: 'transparent', color: 'var(--text-primary)', fontWeight: '600', transition: 'all 0.2s ease' }}
             >
-              ⬅️ {language === 'mr' ? 'प्रशासक पोर्टल' : 'Admin Portal'}
+              ⬅️ {language === 'mr' ? 'प्रशासक पोर्टल' : language === 'hi' ? 'एडमिन पोर्टल' : 'Admin Portal'}
             </button>
           )}
           <div className="chat-avatar">
             <Sparkles size={24} />
           </div>
           <div>
-            <h1>{language === 'mr' ? 'Ai Sathi चॅट' : 'Ai Sathi Chat'}</h1>
+            <h1>{language === 'mr' ? 'Ai Sathi चॅट' : language === 'hi' ? 'Ai Sathi चैट' : 'Ai Sathi Chat'}</h1>
             <p className="chat-subtitle">
               <span className={`status-dot ${isConnected ? 'connected' : 'disconnected'}`}></span>
               {isConnected
-                ? (language === 'mr' ? 'Gemini AI शी जोडलेले • लाइव्ह' : 'Connected to Gemini AI • Live')
-                : (language === 'mr' ? 'ऑफलाइन' : 'Disconnected')
+                ? (language === 'mr' ? 'Gemini AI शी जोडलेले • लाइव्ह' : language === 'hi' ? 'Gemini AI से जुड़ा हुआ • लाइव' : 'Connected to Gemini AI • Live')
+                : (language === 'mr' ? 'ऑफलाइन' : language === 'hi' ? 'ऑफलाइन' : 'Disconnected')
               }
             </p>
           </div>
@@ -448,7 +479,7 @@ export default function Chat() {
               setIsVoiceMode(!isVoiceMode);
               if (isVoiceMode) window.speechSynthesis.cancel();
             }}
-            title={language === 'mr' ? 'आवाज उत्तर टॉगल करा' : 'Toggle Voice Responses'}
+            title={language === 'mr' ? 'आवाज उत्तर टॉगल करा' : language === 'hi' ? 'आवाज़ उत्तर टॉगल करें' : 'Toggle Voice Responses'}
             style={{ cursor: 'pointer', border: 'none' }}
           >
             <Volume2 size={14} style={{ marginRight: '4px' }} />
@@ -458,10 +489,10 @@ export default function Chat() {
             className="badge badge-outline"
             onClick={clearChat}
             style={{ cursor: 'pointer', border: 'none', marginLeft: '5px' }}
-            title={language === 'mr' ? 'चॅट रीसेट करा' : 'Reset Chat'}
+            title={language === 'mr' ? 'चॅट रीसेट करा' : language === 'hi' ? 'चैट रीसेट करें' : 'Reset Chat'}
           >
             <RefreshCw size={14} style={{ marginRight: '4px' }} />
-            {language === 'mr' ? 'रीसेट' : 'Reset'}
+            {language === 'mr' ? 'रीसेट' : language === 'hi' ? 'रीसेट' : 'Reset'}
           </button>
         </div>
       </div>
@@ -471,13 +502,13 @@ export default function Chat() {
         {/* Quick Actions — show only at start */}
         {messages.length <= 1 && (
           <div className="quick-actions animate-fade-in-up">
-            <p className="quick-actions-title">{language === 'mr' ? '⚡ जलद प्रश्न:' : '⚡ Quick Questions:'}</p>
+            <p className="quick-actions-title">{language === 'mr' ? '⚡ जलद प्रश्न:' : language === 'hi' ? '⚡ त्वरित प्रश्न:' : '⚡ Quick Questions:'}</p>
             <div className="quick-actions-grid">
               {quickActions.map((action) => (
-                <button key={action.id} className="quick-action-btn" onClick={() => handleSend(action.query)}>
+                <button key={action.id} className="quick-action-btn" onClick={() => handleSend(language === 'mr' ? action.queryMarathi : language === 'hi' ? action.queryHindi : action.query)}>
                   <span className="quick-action-icon">{action.icon}</span>
                   <div>
-                    <span className="quick-action-label">{language === 'mr' ? action.labelMarathi : action.label}</span>
+                    <span className="quick-action-label">{language === 'mr' ? action.labelMarathi : language === 'hi' ? (action.labelHindi || action.label) : action.label}</span>
                   </div>
                 </button>
               ))}
@@ -524,7 +555,7 @@ export default function Chat() {
                   <span></span><span></span><span></span>
                 </div>
                 <span className="typing-label">
-                  {language === 'mr' ? 'Ai Sathi विचार करत आहे...' : 'Ai Sathi is thinking...'}
+                  {language === 'mr' ? 'Ai Sathi विचार करत आहे...' : language === 'hi' ? 'Ai Sathi सोच रहा है...' : 'Ai Sathi is thinking...'}
                 </span>
               </div>
             </div>
@@ -548,7 +579,7 @@ export default function Chat() {
           <button
             className="image-upload-btn"
             onClick={() => fileInputRef.current?.click()}
-            title={language === 'mr' ? 'फोटो अपलोड करा' : 'Upload Image'}
+            title={language === 'mr' ? 'फोटो अपलोड करा' : language === 'hi' ? 'फोटो अपलोड करें' : 'Upload Image'}
           >
             <Image size={20} />
           </button>
@@ -563,17 +594,17 @@ export default function Chat() {
             className={`voice-btn ${isListening ? 'listening' : ''}`}
             onClick={toggleVoice}
             id="voice-toggle"
-            title={language === 'mr' ? 'आवाजाने बोला' : 'Speak with voice'}
+            title={language === 'mr' ? 'आवाजाने बोला' : language === 'hi' ? 'आवाज़ से बोलें' : 'Speak with voice'}
           >
             {isListening ? <MicOff size={20} /> : <Mic size={20} />}
           </button>
           <input
             ref={inputRef}
             type="text"
-            lang={language === 'mr' ? 'mr' : 'en'}
+            lang={language === 'mr' ? 'mr' : language === 'hi' ? 'hi' : 'en'}
             dir="auto"
             className="chat-input"
-            placeholder={language === 'mr' ? "तुमचा प्रश्न टाइप करा..." : "Type your question..."}
+            placeholder={language === 'mr' ? "तुमचा प्रश्न टाइप करा..." : language === 'hi' ? "अपना प्रश्न टाइप करें..." : "Type your question..."}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -590,7 +621,7 @@ export default function Chat() {
           </button>
         </div>
         <p className="chat-powered-by">
-          ⚡ {language === 'mr' ? 'Google Gemini AI द्वारे संचालित' : 'Powered by Google Gemini AI'}
+          ⚡ {language === 'mr' ? 'Google Gemini AI द्वारे संचालित' : language === 'hi' ? 'Google Gemini AI द्वारा संचालित' : 'Powered by Google Gemini AI'}
         </p>
       </div>
     </div>

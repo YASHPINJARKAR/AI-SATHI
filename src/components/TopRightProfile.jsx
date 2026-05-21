@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../LanguageContext';
-import { UserCircle, LogOut, Settings, User } from 'lucide-react';
+import { UserCircle, LogOut, User } from 'lucide-react';
 import './TopRightProfile.css';
 
 export default function TopRightProfile() {
@@ -39,17 +39,22 @@ export default function TopRightProfile() {
       <div className="top-right-profile">
         <button className="btn btn-primary btn-sm" onClick={openLoginModal}>
           <UserCircle size={18} />
-          <span className="hide-mobile">{language === 'mr' ? 'लॉगिन करा' : 'Sign In'}</span>
+          <span className="hide-mobile">
+            {language === 'mr' ? 'लॉगिन करा' : language === 'hi' ? 'लॉगिन करें' : 'Sign In'}
+          </span>
         </button>
       </div>
     );
   }
 
   return (
-    <div className="top-right-profile" ref={dropdownRef}>
-      <button className="profile-trigger" onClick={() => setDropdownOpen(!dropdownOpen)}>
-        <img src={user.avatar} alt="Profile" className="profile-avatar" />
-      </button>
+    <div className="top-right-container">
+
+
+      <div className="top-right-profile" ref={dropdownRef}>
+        <button className="profile-trigger" onClick={() => setDropdownOpen(!dropdownOpen)}>
+          <img src={user.avatar} alt="Profile" className="profile-avatar" />
+        </button>
 
       {dropdownOpen && (
         <div className="profile-dropdown animate-scale-in">
@@ -62,16 +67,17 @@ export default function TopRightProfile() {
           <div className="dropdown-body">
             <button className="dropdown-item" onClick={handleProfileClick}>
               <User size={16} />
-              {language === 'mr' ? 'माझी प्रोफाइल' : 'My Profile'}
+              {language === 'mr' ? 'माझी प्रोफाइल' : language === 'hi' ? 'मेरी प्रोफ़ाइल' : 'My Profile'}
             </button>
             <div className="dropdown-divider"></div>
             <button className="dropdown-item text-danger" onClick={handleLogout}>
               <LogOut size={16} />
-              {language === 'mr' ? 'लॉग आउट' : 'Logout'}
+              {language === 'mr' ? 'लॉग आउट' : language === 'hi' ? 'लॉग आउट' : 'Logout'}
             </button>
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

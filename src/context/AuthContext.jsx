@@ -118,7 +118,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = (userData) => {
+  function login(userData) {
     // Save to local storage
     const userToSave = {
       id: Date.now().toString(),
