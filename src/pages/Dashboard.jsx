@@ -5,6 +5,8 @@ import { businesses, events } from '../data/mockData';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import DeveloperModal from '../components/DeveloperModal';
+import WeatherWidget from '../components/WeatherWidget';
+import AmravatiInfoTree from '../components/AmravatiInfoTree';
 import './Dashboard.css';
 
 const stats = [
@@ -219,6 +221,9 @@ export default function Dashboard() {
         </div>
       </section>
 
+      {/* Weather Widget */}
+      <WeatherWidget />
+
       {/* Top Rated */}
       <section className="section">
         <div className="section-header">
@@ -275,6 +280,9 @@ export default function Dashboard() {
           ))}
         </div>
       </section>
+
+      {/* Amravati Information Tree */}
+      <AmravatiInfoTree />
 
       {/* Feedback Form */}
       <section className="section feedback-section">

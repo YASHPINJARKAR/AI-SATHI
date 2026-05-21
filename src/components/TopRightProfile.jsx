@@ -36,13 +36,15 @@ export default function TopRightProfile() {
 
   if (!user) {
     return (
-      <div className="top-right-profile">
-        <button className="btn btn-primary btn-sm" onClick={openLoginModal}>
-          <UserCircle size={18} />
-          <span className="hide-mobile">
-            {language === 'mr' ? 'लॉगिन करा' : language === 'hi' ? 'लॉगिन करें' : 'Sign In'}
-          </span>
-        </button>
+      <div className="top-right-container">
+        <div className="top-right-profile">
+          <button className="btn btn-primary btn-sm" onClick={openLoginModal}>
+            <UserCircle size={18} />
+            <span className="hide-mobile">
+              {language === 'mr' ? 'लॉगिन करा' : language === 'hi' ? 'लॉगिन करें' : 'Sign In'}
+            </span>
+          </button>
+        </div>
       </div>
     );
   }
