@@ -89,19 +89,22 @@
 }
 
 /* Hero Visual */
+/* Hero Visual */
 .hero-visual {
   position: relative;
   z-index: 1;
   flex-shrink: 0;
+  overflow: visible;
 }
 
 .hero-graphic {
-  width: 200px;
-  height: 200px;
+  width: 360px;
+  height: 360px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
 }
 
 .hero-circle {
@@ -111,27 +114,78 @@
 }
 
 .hero-circle.c1 {
-  width: 200px; height: 200px;
+  width: 360px; height: 360px;
   animation: spin 20s linear infinite;
 }
 
 .hero-circle.c2 {
-  width: 150px; height: 150px;
+  width: 270px; height: 270px;
   border-color: rgba(255,109,0,0.2);
   animation: spin 15s linear infinite reverse;
 }
 
 .hero-circle.c3 {
-  width: 100px; height: 100px;
+  width: 180px; height: 180px;
   border-color: rgba(255,255,255,0.15);
   animation: spin 10s linear infinite;
 }
 
-.hero-emoji {
-  font-size: 4rem;
-  animation: float 3s ease-in-out infinite;
-  filter: drop-shadow(0 8px 24px rgba(255,109,0,0.3));
+/* Hide Spline watermark/badge globally */
+a[href*="spline.design"],
+a[href*="spline"],
+#logo,
+[class*="spline-logo"],
+.hero-spline-container a,
+.hero-spline-container #logo {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
+
+.hero-spline-container {
+  width: 360px;
+  height: 360px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  pointer-events: auto;
+}
+
+.hero-spline-container .spline-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 360px !important;
+  background: transparent !important;
+  overflow: visible !important;
+  border-radius: 0 !important;
+}
+
+.hero-spline-container .spline-canvas-wrap,
+.hero-spline-container .spline-canvas-wrap canvas,
+.hero-spline-container .spline-canvas-wrap > div,
+.hero-spline-container .spline-canvas-wrap div {
+  border-radius: 0 !important;
+  overflow: visible !important;
+  background: transparent !important;
+}
+
+/* Skeleton loaders */
+.hero-spline-container .spline-skeleton {
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+.hero-spline-container .spline-skeleton-orb { width: 80px; height: 80px; }
+.hero-spline-container .spline-skeleton-ring--1 { width: 120px; height: 120px; }
+.hero-spline-container .spline-skeleton-ring--2 { width: 200px; height: 200px; }
+.hero-spline-container .spline-skeleton-ring--3 { width: 280px; height: 280px; }
+.hero-spline-container .spline-skeleton-label { display: none; }
 
 /* Stats */
 .stats-section {
@@ -419,7 +473,13 @@
   .hero-actions { justify-content: center; flex-wrap: wrap; gap: 10px; }
   .hero-actions .btn { width: 100%; max-width: 260px; }
   .hero-graphic { width: 120px; height: 120px; }
-  .hero-emoji { font-size: 2.8rem; }
+  .hero-spline-container {
+    width: 100px;
+    height: 100px;
+  }
+  .hero-spline-container .spline-wrapper {
+    min-height: 100px !important;
+  }
   .hero-title { font-size: 1.7rem; }
   .hero-subtitle { font-size: 0.9rem; }
   .hero-desc { font-size: 0.82rem; }

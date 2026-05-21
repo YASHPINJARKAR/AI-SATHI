@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import DeveloperModal from '../components/DeveloperModal';
 import WeatherWidget from '../components/WeatherWidget';
 import AmravatiInfoTree from '../components/AmravatiInfoTree';
+import SplineScene from '../components/SplineScene';
 import './Dashboard.css';
 
 const stats = [
@@ -180,7 +181,9 @@ export default function Dashboard() {
             <div className="hero-circle c1"></div>
             <div className="hero-circle c2"></div>
             <div className="hero-circle c3"></div>
-            <div className="hero-emoji">🤖</div>
+            <div className="hero-spline-container">
+              <SplineScene scene="https://prod.spline.design/31VIZdegQnugXSDa/scene.splinecode" />
+            </div>
           </div>
         </div>
       </section>

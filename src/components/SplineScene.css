@@ -1,0 +1,303 @@
+/* ===== Spline Scene Component Styles ===== */
+
+.spline-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  overflow: visible;
+  border-radius: 0;
+  background: transparent !important;
+}
+
+/* ─── Canvas Layer ─────────────────────────────────────────────────────────── */
+.spline-canvas-wrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  overflow: visible;
+  background: transparent !important;
+}
+
+.spline-canvas-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0;
+  background: transparent !important;
+}
+
+.spline-canvas-wrap > div,
+.spline-canvas-wrap div {
+  background: transparent !important;
+}
+
+/* Hide Spline watermark */
+.spline-wrapper a,
+.spline-wrapper #logo,
+.spline-wrapper [href*="spline"],
+.spline-wrapper [class*="logo"],
+a[href*="spline.design"],
+a[href*="spline"],
+#logo,
+[class*="spline-logo"] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* ─── Skeleton Loader ──────────────────────────────────────────────────────── */
+.spline-skeleton {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(255, 109, 0, 0.06) 0%,
+    rgba(255, 158, 64, 0.03) 50%,
+    transparent 80%
+  );
+  border-radius: 28px;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.spline-skeleton-orb {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 40% 35%,
+    rgba(255, 158, 64, 0.7),
+    rgba(255, 109, 0, 0.5) 50%,
+    rgba(255, 109, 0, 0.1) 80%
+  );
+  filter: blur(8px);
+  animation: skeletonPulse 2.4s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
+}
+
+.spline-skeleton-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 109, 0, 0.2);
+  animation: skeletonRingSpin 8s linear infinite;
+}
+
+.spline-skeleton-ring--1 {
+  width: 200px;
+  height: 200px;
+  animation-duration: 7s;
+  border-color: rgba(255, 109, 0, 0.25);
+}
+
+.spline-skeleton-ring--2 {
+  width: 300px;
+  height: 300px;
+  animation-duration: 11s;
+  animation-direction: reverse;
+  border-color: rgba(255, 109, 0, 0.15);
+}
+
+.spline-skeleton-ring--3 {
+  width: 420px;
+  height: 420px;
+  animation-duration: 15s;
+  border-color: rgba(255, 109, 0, 0.08);
+}
+
+.spline-skeleton-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.spline-skeleton-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 109, 0, 0.5);
+  top: calc(50% + sin(calc(var(--i) * 45deg)) * 150px);
+  left: calc(50% + cos(calc(var(--i) * 45deg)) * 150px);
+  animation: skeletonParticle 3s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.35s);
+}
+
+/* Manually position particles in a circle */
+.spline-skeleton-particle:nth-child(1) { top: 20%; left: 50%; }
+.spline-skeleton-particle:nth-child(2) { top: 30%; left: 78%; }
+.spline-skeleton-particle:nth-child(3) { top: 55%; left: 85%; }
+.spline-skeleton-particle:nth-child(4) { top: 75%; left: 70%; }
+.spline-skeleton-particle:nth-child(5) { top: 75%; left: 30%; }
+.spline-skeleton-particle:nth-child(6) { top: 55%; left: 15%; }
+.spline-skeleton-particle:nth-child(7) { top: 30%; left: 22%; }
+.spline-skeleton-particle:nth-child(8) { top: 20%; left: 50%; }
+
+.spline-skeleton-label {
+  position: absolute;
+  bottom: 28px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 109, 0, 0.5);
+  animation: skeletonPulse 2.4s ease-in-out infinite;
+}
+
+/* ─── Error Fallback ───────────────────────────────────────────────────────── */
+.spline-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 50%, rgba(255,109,0,0.05) 0%, transparent 70%);
+  border-radius: 28px;
+}
+
+.spline-error-orb {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, rgba(255,158,64,0.5), rgba(255,109,0,0.3) 50%, transparent 80%);
+  filter: blur(20px);
+  animation: skeletonPulse 4s ease-in-out infinite;
+}
+
+.spline-error-rings {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spline-error-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255,109,0,0.2);
+  animation: skeletonRingSpin 10s linear infinite;
+}
+
+.spline-error-ring:nth-child(1) { width: 240px; height: 240px; }
+.spline-error-ring:nth-child(2) { width: 340px; height: 340px; animation-direction: reverse; animation-duration: 14s; }
+
+/* ─── Mobile Fallback ─────────────────────────────────────────────────────── */
+.spline-mobile-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 28px;
+  overflow: hidden;
+}
+
+.spline-mobile-orb {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 40% 35%,
+    rgba(255, 200, 100, 0.9),
+    rgba(255, 109, 0, 0.7) 45%,
+    rgba(255, 50, 0, 0.3) 75%,
+    transparent 90%
+  );
+  filter: blur(30px);
+  animation: mobileOrbFloat 6s ease-in-out infinite;
+}
+
+.spline-mobile-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 109, 0, 0.2);
+}
+
+.spline-mobile-ring--1 {
+  width: 340px;
+  height: 340px;
+  animation: skeletonRingSpin 10s linear infinite;
+}
+
+.spline-mobile-ring--2 {
+  width: 440px;
+  height: 440px;
+  animation: skeletonRingSpin 16s linear infinite reverse;
+  border-color: rgba(255, 109, 0, 0.1);
+}
+
+.spline-mobile-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.spline-mobile-particle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 109, 0, 0.6);
+  animation: skeletonParticle 4s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.5s);
+}
+
+.spline-mobile-particle:nth-child(1) { top: 18%; left: 50%; }
+.spline-mobile-particle:nth-child(2) { top: 35%; left: 80%; }
+.spline-mobile-particle:nth-child(3) { top: 65%; left: 80%; }
+.spline-mobile-particle:nth-child(4) { top: 80%; left: 50%; }
+.spline-mobile-particle:nth-child(5) { top: 65%; left: 20%; }
+.spline-mobile-particle:nth-child(6) { top: 35%; left: 20%; }
+
+/* ─── Keyframes ────────────────────────────────────────────────────────────── */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.06); }
+}
+
+@keyframes skeletonRingSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes skeletonParticle {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.8); }
+}
+
+@keyframes mobileOrbFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-18px) scale(1.04); }
+}
+
+/* ─── Dark Mode ────────────────────────────────────────────────────────────── */
+[data-theme="dark"] .spline-skeleton {
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(255, 109, 0, 0.1) 0%,
+    rgba(255, 158, 64, 0.05) 50%,
+    transparent 80%
+  );
+}
+
+/* ─── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .spline-wrapper {
+    min-height: 420px;
+  }
+}
+
+@media (max-width: 768px) {
+  .spline-wrapper {
+    min-height: 360px;
+    border-radius: 20px;
+  }
+}

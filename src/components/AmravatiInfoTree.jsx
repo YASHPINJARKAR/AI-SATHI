@@ -71,6 +71,10 @@ export default function AmravatiInfoTree() {
         <div className="tree-branches">
           <div className="branch-line"></div>
           <div className="branch-nodes">
+            <button className={`branch-node ${activeTab === 'demography' ? 'active' : ''}`} onClick={() => setActiveTab('demography')}>
+              <div className="node-icon"><Users size={20} /></div>
+              <span>Demography</span>
+            </button>
             <button className={`branch-node ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
               <div className="node-icon"><BookOpen size={20} /></div>
               <span>History</span>
@@ -78,10 +82,6 @@ export default function AmravatiInfoTree() {
             <button className={`branch-node ${activeTab === 'geography' ? 'active' : ''}`} onClick={() => setActiveTab('geography')}>
               <div className="node-icon"><Map size={20} /></div>
               <span>Geography</span>
-            </button>
-            <button className={`branch-node ${activeTab === 'demography' ? 'active' : ''}`} onClick={() => setActiveTab('demography')}>
-              <div className="node-icon"><Users size={20} /></div>
-              <span>Demography</span>
             </button>
             <button className={`branch-node ${activeTab === 'helpline' ? 'active' : ''}`} onClick={() => setActiveTab('helpline')}>
               <div className="node-icon"><Phone size={20} /></div>
