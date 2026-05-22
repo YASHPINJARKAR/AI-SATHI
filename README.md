@@ -346,10 +346,9 @@ Create a `.env` file in the root directory with the following variables:
 
 ```env
 # Google Gemini AI API Key
-VITE_GEMINI_API_KEY=your_gemini_api_key_here
+VITE_GEMINI_API_KEY=AIzaSyBpHmcD0P__KIONd_-sjr9eQ8mMDG0bYW0
 
-# OpenRouter API Key (fallback AI provider)
-VITE_OPENROUTER_API_KEY=your_openrouter_api_key_here
+
 ```
 
 > ⚠️ **Never commit your `.env` file to version control.** It is already listed in `.gitignore`.
@@ -399,13 +398,10 @@ firebase deploy
 ## 👨‍💻 Developer Team
 
 Built with ❤️ by the **Ai Sathi Development Team** for the Smart City initiative of Amravati, Maharashtra.
-
-| Role | Responsibility |
-|---|---|
-| Full Stack Developer | React, Firebase, AI Integration |
-| UI/UX Designer | Design system, Spline 3D, Animations |
-| AI Engineer | Gemini prompts, multilingual NLP |
-| Backend / Data | Mock data, city knowledge base |
+Sanket Thakare
+Bhakti Kaner
+Yash Pinjarkar
+Trisha Bobade
 
 ---
 

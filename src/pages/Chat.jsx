@@ -118,6 +118,7 @@ export default function Chat() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const chatRef = useRef(null);
+  const handleSendRef = useRef(null); // keeps toggleVoice closure fresh
 
   // Update welcome message if user switches language before chatting
   useEffect(() => {
@@ -260,7 +261,7 @@ export default function Chat() {
   };
 
   // ── Send Message ──────────────────────────────────────────────
-  const handleSend = async (text = '') => {
+  const handleSend = useCallback(async (text = '') => {
     requireAuth(async () => {
       const messageText = text || input.trim();
       if ((!messageText && !selectedImage) || isTyping) return;
@@ -283,7 +284,13 @@ export default function Chat() {
         speakText(responseText);
       }
     });
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input, selectedImage, isTyping, isVoiceMode, speakText, requireAuth]);
+
+  // Keep a ref so toggleVoice always has the freshest handleSend
+  useEffect(() => {
+    handleSendRef.current = handleSend;
+  }, [handleSend]);
 
   // ── Keyboard Handler ─────────────────────────────────────────
   const handleKeyDown = (e) => {
@@ -320,9 +327,9 @@ export default function Chat() {
       const transcript = event.results[0][0].transcript;
       setInput(transcript);
       setIsListening(false);
-      // Auto-send after voice input
+      // Auto-send after voice input — use ref to always get the freshest handleSend
       setTimeout(() => {
-        handleSend(transcript);
+        handleSendRef.current(transcript);
       }, 300);
     };
     
@@ -348,7 +355,7 @@ export default function Chat() {
       console.error('Speech recognition start error:', err);
       setIsListening(false);
     }
-  }, [language, isListening, handleSend]);
+  }, [language, isListening]); // handleSend accessed via ref — no stale closure
 
   // Auto-trigger voice assistant if URL has ?voice=true parameter
   useEffect(() => {
