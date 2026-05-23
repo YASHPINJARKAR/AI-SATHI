@@ -82,6 +82,9 @@ export default function LandingPage({ darkMode, setDarkMode }) {
         {/* Right Visuals — Spline 3D + floating cards overlay */}
         <div className="landing-visuals animate-fade-in-up" style={{ animationDelay: '400ms' }}>
 
+          {/* Glowing background orange orb */}
+          <div className="glowing-orb"></div>
+
           {/* ── 3D Spline Scene ── */}
           <div className="spline-hero-container">
             <SplineScene scene={SPLINE_SCENE_URL} />
