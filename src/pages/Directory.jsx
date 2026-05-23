@@ -10,12 +10,16 @@ export default function Directory() {
   const { requireAuth } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('distance');
+  const [sortBy, setSortBy] = useState('rating');
 
   const filteredBusinesses = useMemo(() => {
     let filtered = businesses;
     if (activeCategory !== 'all') {
-      filtered = filtered.filter(b => b.category === activeCategory);
+      if (activeCategory === 'education') {
+        filtered = filtered.filter(b => b.category === 'school' || b.category === 'college');
+      } else {
+        filtered = filtered.filter(b => b.category === activeCategory);
+      }
     }
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -27,12 +31,10 @@ export default function Directory() {
         b.tags.some(t => t.toLowerCase().includes(q))
       );
     }
-    if (sortBy === 'distance') {
-      filtered = [...filtered].sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
-    } else if (sortBy === 'rating') {
-      filtered = [...filtered].sort((a, b) => b.rating - a.rating);
+    if (sortBy === 'rating') {
+      filtered = [...filtered].sort((a, b) => (b.rating || 0) - (a.rating || 0));
     } else if (sortBy === 'reviews') {
-      filtered = [...filtered].sort((a, b) => b.reviews - a.reviews);
+      filtered = [...filtered].sort((a, b) => (b.reviews || 0) - (a.reviews || 0));
     }
     return filtered;
   }, [searchQuery, activeCategory, sortBy]);
@@ -110,9 +112,6 @@ export default function Directory() {
               onChange={(e) => setSortBy(e.target.value)}
               id="sort-select"
             >
-              <option value="distance">
-                {language === 'mr' ? 'सर्वात जवळचे' : language === 'hi' ? 'निकटतम पहले' : 'Nearest First'}
-              </option>
               <option value="rating">
                 {language === 'mr' ? 'सर्वाधिक रेट केलेले' : language === 'hi' ? 'सर्वोच्च रेटेड' : 'Highest Rated'}
               </option>
@@ -129,7 +128,7 @@ export default function Directory() {
       <div className="business-grid">
         {filteredBusinesses.map((biz, idx) => (
           <div
-            key={biz.id}
+            key={`${biz.category}-${biz.id}-${idx}`}
             className="business-card card card-elevated card-interactive animate-fade-in-up"
             style={{ animationDelay: `${idx * 60}ms` }}
           >
@@ -152,10 +151,6 @@ export default function Directory() {
                 <Star size={14} fill="currentColor" />
                 {biz.rating}
                 <span className="biz-reviews">({biz.reviews})</span>
-              </span>
-              <span className="biz-distance">
-                <MapPin size={14} />
-                {biz.distance}
               </span>
             </div>
 

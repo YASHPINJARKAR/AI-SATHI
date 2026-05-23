@@ -121,64 +121,22 @@ export default function MapPage() {
     };
   }, []);
 
-  // Fetch from Nominatim for global Amravati search with robust query fallbacks
+  // Fetch from Nominatim for global search - single clean query with Amravati viewbox
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (searchQuery.length > 2) {
         setIsSearching(true);
         try {
           const q = searchQuery.trim();
-          let data = [];
-
-          // Step 1: Try exact query in Amravati, Maharashtra
-          try {
-            const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q + ', Amravati, Maharashtra')}&format=json&limit=15`;
-            const res = await fetch(url, { headers: { 'Accept-Language': 'en,mr,hi' } });
-            data = await res.json();
-          } catch (e) {
-            console.error("First geocoding attempt failed", e);
-          }
-
-          // Step 2: Fallback - if 0 results, check if query contains common honorifics/prefixes and strip them
-          if ((!data || data.length === 0) && /(shri|shree|sri|saint|st\.?|dr\.?)\b/i.test(q)) {
-            try {
-              const cleanQ = q.replace(/(shri\.|shree\.|sri\.|shri|shree|sri|saint|st\.?|dr\.?)\s+/gi, '').trim();
-              if (cleanQ.length > 2) {
-                const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cleanQ + ', Amravati, Maharashtra')}&format=json&limit=15`;
-                const res = await fetch(url, { headers: { 'Accept-Language': 'en,mr,hi' } });
-                data = await res.json();
-              }
-            } catch (e) {
-              console.error("Stripped prefix geocoding failed", e);
-            }
-          }
-
-          // Step 3: Fallback - if still 0 results, try with a broader query "q, Amravati"
-          if (!data || data.length === 0) {
-            try {
-              const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q + ', Amravati')}&format=json&limit=15`;
-              const res = await fetch(url, { headers: { 'Accept-Language': 'en,mr,hi' } });
-              data = await res.json();
-            } catch (e) {
-              console.error("Broader geocoding failed", e);
-            }
-          }
-
-          // Step 4: Fallback - if still 0 results, try searching the terms with Amravati prepended
-          if (!data || data.length === 0) {
-            try {
-              const cleanQ = q.replace(/(shri\.|shree\.|sri\.|shri|shree|sri)\s+/gi, '').trim();
-              const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent('Amravati ' + cleanQ)}&format=json&limit=15`;
-              const res = await fetch(url, { headers: { 'Accept-Language': 'en,mr,hi' } });
-              data = await res.json();
-            } catch (e) {
-              console.error("Prepended geocoding failed", e);
-            }
-          }
+          // Amravati bounding box: 77.65,20.85 to 77.90,21.05
+          const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q + ' Amravati')}&format=json&limit=10&countrycodes=in&addressdetails=1`;
+          const res = await fetch(url, { headers: { 'Accept-Language': 'en,mr,hi' } });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
 
           if (data && data.length > 0) {
             const mapped = data.map(item => ({
-              id: `ext-${item.place_id}`, // Ensure unique string prefix to prevent collision with mock numbers
+              id: `ext-${item.place_id}`,
               name: item.display_name.split(',')[0],
               nameMarathi: item.display_name.split(',')[0],
               nameHindi: item.display_name.split(',')[0],
@@ -187,30 +145,34 @@ export default function MapPage() {
               lng: parseFloat(item.lon),
               category: 'external',
               rating: '-',
-              distance: 'Web Result',
               isOpen: true,
-              image: '📍'
+              image: '📍',
+              tags: []
             }));
             setExternalResults(mapped);
           } else {
             setExternalResults([]);
           }
         } catch (e) {
-          console.error("Geocoding routine failed", e);
+          console.error('Search failed:', e);
           setExternalResults([]);
         }
         setIsSearching(false);
       } else {
         setExternalResults([]);
       }
-    }, 1000);
+    }, 700);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
   const filtered = useMemo(() => {
     let list = businesses;
     if (activeCategory !== 'all') {
-      list = list.filter(b => b.category === activeCategory);
+      if (activeCategory === 'education') {
+        list = list.filter(b => b.category === 'school' || b.category === 'college');
+      } else {
+        list = list.filter(b => b.category === activeCategory);
+      }
     }
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -227,8 +189,10 @@ export default function MapPage() {
 
   const handleBizClick = (biz) => {
     setSelectedBiz(biz);
-    setFlyTo([biz.lat, biz.lng]);
-    setRouteCoords(null); // Clear previous route
+    if (biz.lat && biz.lng && !isNaN(biz.lat) && !isNaN(biz.lng)) {
+      setFlyTo([biz.lat, biz.lng]);
+    }
+    setRouteCoords(null);
   };
 
   const calculateRoute = async (biz) => {
@@ -347,11 +311,11 @@ export default function MapPage() {
             <p className="map-results-count">
               {filtered.length} {language === 'mr' ? 'ठिकाणे सापडली' : language === 'hi' ? 'स्थान मिले' : 'places found'}
             </p>
-            {filtered.map(biz => {
+            {filtered.map((biz, idx) => {
               const isSelected = selectedBiz?.id === biz.id;
               return (
                 <div
-                  key={biz.id}
+                  key={`${biz.category}-${biz.id}-${idx}`}
                   className={`map-result-item ${isSelected ? 'selected' : ''}`}
                   onClick={() => handleBizClick(biz)}
                 >
@@ -362,8 +326,7 @@ export default function MapPage() {
                         {language === 'mr' ? biz.nameMarathi : language === 'hi' ? (biz.nameHindi || biz.name) : biz.name}
                       </h4>
                       <div className="map-result-meta">
-                        <span><Star size={11} fill="currentColor" /> {biz.rating}</span>
-                        <span><MapPin size={11} /> {biz.distance}</span>
+                        {biz.rating !== '-' && <span><Star size={11} fill="currentColor" /> {biz.rating}</span>}
                         <span className={`status-dot ${biz.isOpen ? 'open' : 'closed'}`}>
                           {biz.isOpen 
                             ? (language === 'mr' ? 'उघडे आहे' : language === 'hi' ? 'खुला है' : 'Open') 
@@ -445,7 +408,7 @@ export default function MapPage() {
               </>
             )}
 
-            {filtered.map((biz, idx) => (
+            {filtered.filter(biz => biz.lat && biz.lng).map((biz, idx) => (
               <Marker key={`${biz.id}-${idx}`} position={[biz.lat, biz.lng]} icon={selectedBiz?.id === biz.id ? destIcon : new L.Icon.Default()}>
                 <Popup>
                   <div className="map-popup">

@@ -182,7 +182,7 @@ export default function Dashboard() {
             <div className="hero-circle c2"></div>
             <div className="hero-circle c3"></div>
             <div className="hero-spline-container">
-              <SplineScene scene="https://prod.spline.design/31VIZdegQnugXSDa/scene.splinecode" />
+              <SplineScene scene="https://prod.spline.design/WqoBF8iX9a2omOrk/scene.splinecode" />
             </div>
           </div>
         </div>
