@@ -460,15 +460,386 @@ export const businesses = [
 ];
 
 export const events = [
-  { id: 1, title: "Amravati Tech Hackathon 2026", titleMarathi: "अमरावती टेक हॅकेथॉन 2026", titleHindi: "अमरावती टेक हैकथॉन 2026", category: "tech", date: "2026-04-12", time: "9:00 AM", location: "SGBAU Campus", price: "Free", image: "💻", attendees: 250, description: "48-hour hackathon for college students. Build innovative solutions for Amravati's problems." },
-  { id: 2, title: "Navratri Garba Night", titleMarathi: "नवरात्री गरबा नाइट", titleHindi: "नवरात्रि गरबा नाइट", category: "culture", date: "2026-10-15", time: "7:00 PM", location: "Hanuman Vyayam Prasarak Mandal Ground", price: "₹200", image: "💃", attendees: 5000, description: "Grand Navratri celebration with live music, dance, and food stalls." },
-  { id: 3, title: "PM-KISAN Registration Camp", titleMarathi: "PM-KISAN नोंदणी शिबिर", titleHindi: "पीएम-किसान पंजीकरण शिविर", category: "government", date: "2026-04-10", time: "10:00 AM", location: "Collectorate Office", price: "Free", image: "🏛️", attendees: 500, description: "Free registration camp for PM-KISAN Samman Nidhi. Bring Aadhaar and land documents." },
+  {
+    id: 1,
+    title: "Amravati Tech Hackathon 2026",
+    titleMarathi: "अमरावती टेक हॅकेथॉन 2026",
+    titleHindi: "अमरावती टेक हैकथॉन 2026",
+    category: "tech",
+    date: "2026-04-12",
+    time: "9:00 AM",
+    location: "SGBAU Campus, Amravati",
+    price: "Free",
+    image: "💻",
+    attendees: 250,
+    description: "48-hour intensive hackathon for college students to build innovative software solutions for localized infrastructure challenges."
+  },
+
+  {
+    id: 10,
+    title: "National Level TechFest & Project Expo 2026",
+    titleMarathi: "राष्ट्रीय टेकफेस्ट आणि प्रोजेक्ट एक्स्पो 2026",
+    titleHindi: "नेशनल टेकफेस्ट और प्रोजेक्ट एक्सपो 2026",
+    category: "tech",
+    date: "2026-04-18",
+    time: "10:00 AM",
+    location: "Government Polytechnic, Amravati",
+    price: "Free",
+    image: "🛠️",
+    attendees: 400,
+    description: "Mega engineering exhibition featuring AI models, IoT projects, embedded systems, full-stack apps, and innovative student hardware solutions."
+  },
+
+  {
+    id: 11,
+    title: "CodeSprint 2026 - Open Source Algorithmic Challenge",
+    titleMarathi: "कोडस्प्रिंट 2026 - ओपन सोर्स अल्गोरिदमिक चॅलेंज",
+    titleHindi: "कोडस्प्रिंट 2026 - ओपन सोर्स एल्गोरिदमिक चैलेंज",
+    category: "tech",
+    date: "2026-06-10",
+    time: "10:00 AM",
+    location: "WebLabs Incubation Workspace, Camp Area, Amravati",
+    price: "₹50",
+    image: "⌨️",
+    attendees: 180,
+    description: "Competitive programming event focused on advanced algorithms, optimized coding, and real-time problem solving challenges."
+  },
+
+  {
+    id: 12,
+    title: "Next-Gen UI/UX Design BootCamp & Figma Challenge",
+    titleMarathi: "नेक्स्ट-जन UI/UX डिझाईन बूटकॅम्प आणि फिग्मा चॅलेंज",
+    titleHindi: "नेक्स्ट-जन UI/UX डिज़ाइन बूटकैंप और फिग्मा चैलेंज",
+    category: "tech",
+    date: "2026-07-17",
+    time: "11:00 AM",
+    location: "Digital Design Center Lounge, Badnera Road, Amravati",
+    price: "₹40",
+    image: "🎨",
+    attendees: 120,
+    description: "Interactive UI/UX workshop covering Figma components, design systems, prototypes, and modern product interface design."
+  },
+
+  {
+    id: 2,
+    title: "Navratri Garba Night & Cultural Utsav",
+    titleMarathi: "नवरात्री गरबा नाईट आणि सांस्कृतिक उत्सव",
+    titleHindi: "नवरात्रि गरबा नाइट एवं सांस्कृतिक उत्सव",
+    category: "culture",
+    date: "2026-10-15",
+    time: "7:00 PM",
+    location: "Hanuman Vyayam Prasarak Mandal Ground (HVPM), Amravati",
+    price: "₹200",
+    image: "💃",
+    attendees: 5000,
+    description: "Grand traditional Navratri celebration featuring traditional live music ensembles, folk dance showcases, and ethnic food stalls."
+  },
+
+  {
+    id: 6,
+    title: "Marathi Literature Festival",
+    titleMarathi: "मराठी साहित्य महोत्सव",
+    titleHindi: "मराठी साहित्य महोत्सव",
+    category: "culture",
+    date: "2026-04-25",
+    time: "11:00 AM",
+    location: "Shivaji Mandir, Old Town Hub, Amravati",
+    price: "₹100",
+    image: "📚",
+    attendees: 3000,
+    description: "Celebrated annual literary gathering hosting renowned regional authors, poetry recitations, book launches, and panel debates."
+  },
+
+  {
+    id: 9,
+    title: "Chhatrapati Shivaji Maharaj Jayanti Utsav & Folk Rally",
+    titleMarathi: "छत्रपती शिवाजी महाराज जयंती उत्सव आणि लोककला रॅली",
+    titleHindi: "छत्रपति शिवाजी महाराज जयंती उत्सव एवं लोक रैली",
+    category: "culture",
+    date: "2026-02-19",
+    time: "9:00 AM",
+    location: "Rajkamal Chowk Main Central Corridor, Amravati",
+    price: "Free",
+    image: "🏇",
+    attendees: 8000,
+    description: "Grand community procession and regional historical celebration honoring local heritage, martial arts, and traditional lezim arrays."
+  },
+
+  {
+    id: 13,
+    title: "Vidarbha Heritage Food & Folk Art Exhibition",
+    titleMarathi: "विदर्भ हेरिटेज फूड आणि लोककला प्रदर्शन",
+    titleHindi: "विदर्भ हेरिटेज फूड एवं लोक कला प्रदर्शनी",
+    category: "culture",
+    date: "2026-06-13",
+    time: "4:00 PM",
+    location: "Amravati Town Club Exhibition Lawns, Camp Area, Amravati",
+    price: "₹30",
+    image: "🍛",
+    attendees: 4000,
+    description: "Upcoming cultural showcase spotlighting local culinary traditions, handicraft kiosks, and live classical arts."
+  },
+
+  {
+    id: 14,
+    title: "Monsoon Indian Classical Raga & Dance Recital",
+    titleMarathi: "मान्सून भारतीय शास्त्रीय राग आणि नृत्य कार्यक्रम",
+    titleHindi: "मानसून भारतीय शास्त्रीय राग एवं नृत्य समारोह",
+    category: "culture",
+    date: "2026-07-12",
+    time: "6:00 PM",
+    location: "District Cultural Hall Complex, Near Irwin Square, Amravati",
+    price: "₹40",
+    image: "🎶",
+    attendees: 2000,
+    description: "Upcoming seasonal musical assembly gathering veteran classical string, sitar, and Kathak performers across the state."
+  },
+
+  {
+    id: 15,
+    title: "Annual Amravati Heritage Maha-Marathon 2026",
+    titleMarathi: "वार्षिक अमरावती हेरिटेज महा-मॅरेथॉन 2026",
+    titleHindi: "वार्षिक अमरावती हेरिटेज महा-मैराथन 2026",
+    category: "sports",
+    date: "2026-11-22",
+    time: "5:00 AM",
+    location: "Main Stadium Outer Gate Complex, HVPM, Amravati",
+    price: "₹150",
+    image: "🏃‍♂️",
+    attendees: 6000,
+    description: "City-wide marathon event featuring 5K, 10K, and 21K race categories for athletes, students, and fitness enthusiasts."
+  },
+
+  {
+    id: 16,
+    title: "Vidarbha Inter-College Track & Field Championship",
+    titleMarathi: "विदर्भ आंतर-महाविद्यालयीन ट्रॅक आणि फील्ड स्पर्धा",
+    titleHindi: "विदर्भ अंतर-कॉलेज ट्रैक एवं फील्ड चैंपियनशिप",
+    category: "sports",
+    date: "2026-11-10",
+    time: "7:00 AM",
+    location: "SGBAU University Sports Ground Complex, Amravati",
+    price: "Free",
+    image: "🏅",
+    attendees: 3500,
+    description: "Major inter-college athletics championship featuring sprint races, relays, long jump, shot put, and track competitions."
+  },
+
+  {
+    id: 17,
+    title: "Amravati Monsoon 10K Run Challenge",
+    titleMarathi: "अमरावती मॉन्सून 10K रन चॅलेंज",
+    titleHindi: "अमरावती मानसून 10K रन चैलेंज",
+    category: "sports",
+    date: "2026-06-14",
+    time: "6:00 AM",
+    location: "Pohara Forest Reserve Base Trail, Malkhed Road, Amravati",
+    price: "₹40",
+    image: "🌧️",
+    attendees: 1800,
+    description: "Scenic monsoon marathon through forest trails featuring endurance running and eco-friendly fitness activities."
+  },
+
+  {
+    id: 18,
+    title: "Summer Night 5K Speed Sprint & Fitness Meet",
+    titleMarathi: "समर नाईट 5K स्पीड स्प्रिंट आणि फिटनेस मीट",
+    titleHindi: "समर नाइट 5K स्पीड स्प्रिंट एवं फिटनेस मीट",
+    category: "sports",
+    date: "2026-07-11",
+    time: "7:30 PM",
+    location: "New Bypass Road Cycling Track Entry Hub, Amravati",
+    price: "₹30",
+    image: "🌃",
+    attendees: 1200,
+    description: "Night sprint racing event with illuminated tracks, cardio fitness sessions, and post-run wellness activities."
+  },
   { id: 4, title: "Inter-College Cricket Tournament", titleMarathi: "आंतर-महाविद्यालय क्रिकेट स्पर्धा", titleHindi: "अंतर-कॉलेज क्रिकेट टूर्नामेंट", category: "sports", date: "2026-04-20", time: "8:00 AM", location: "Vidarbha Cricket Association Ground", price: "Free", image: "🏏", attendees: 1000, description: "Annual cricket tournament featuring 16 colleges from Amravati district." },
+
+  {
+    id: 19,
+    title: "Government of India Post-Matric Scholarship Scheme",
+    titleMarathi: "भारत सरकार पोस्ट-मॅट्रिक शिष्यवृत्ती योजना",
+    titleHindi: "भारत सरकार पोस्ट-मैट्रिक छात्रवृत्ति योजना",
+    category: "education",
+    date: "2026-07-01",
+    time: "9:00 AM",
+    location: "Social Welfare Office Department, Amravati",
+    price: "Free",
+    image: "🎓",
+    attendees: 5000,
+    description: "Scholarship scheme offering tuition fee waivers and maintenance allowances for SC, ST, and OBC students pursuing higher education."
+  },
+
+  {
+    id: 20,
+    title: "Rajarshi Chhatrapati Shahu Maharaj Fee Reimbursement Scheme",
+    titleMarathi: "राजर्षी छत्रपती शाहू महाराज फी परतावा योजना",
+    titleHindi: "राजर्षि छत्रपति शाहू महाराज शुल्क प्रतिपूर्ति योजना",
+    category: "education",
+    date: "2026-07-05",
+    time: "10:00 AM",
+    location: "DTE Regional Office & College Scholarship Helpdesk, Amravati",
+    price: "Free",
+    image: "📘",
+    attendees: 3500,
+    description: "Fee reimbursement support for economically backward open category students enrolled in professional education courses."
+  },
+
+  {
+    id: 21,
+    title: "Amravati Academic HackSprint & Coding Masterclass",
+    titleMarathi: "अमरावती अकॅडमिक हॅकस्प्रिंट आणि कोडिंग मास्टरक्लास",
+    titleHindi: "अमरावती अकादमिक हैकस्प्रिंट एवं कोडिंग मास्टरक्लास",
+    category: "education",
+    date: "2026-06-20",
+    time: "10:00 AM",
+    location: "WebLabs Campus Hub, Badnera Node, Amravati",
+    price: "₹50",
+    image: "💻",
+    attendees: 600,
+    description: "Hands-on coding workshop covering backend logic, debugging, networking concepts, and practical programming exercises."
+  },
+
+  {
+    id: 22,
+    title: "AI Chatbot Architecture & Full-Stack Student Bootcamp",
+    titleMarathi: "AI चॅटबॉट आर्किटेक्चर आणि फुल-स्टॅक स्टुडंट बूटकॅम्प",
+    titleHindi: "AI चैटबॉट आर्किटेक्चर एवं फुल-स्टैक स्टूडेंट बूटकैंप",
+    category: "education",
+    date: "2026-07-24",
+    time: "9:30 AM",
+    location: "Department of Computer Technology & Systems Lab, Amravati",
+    price: "₹40",
+    image: "🤖",
+    attendees: 450,
+    description: "Interactive student bootcamp focused on chatbot development, Firebase integration, APIs, and full-stack application deployment."
+  },
   { id: 5, title: "Career Fair 2026", titleMarathi: "करिअर मेळावा 2026", titleHindi: "करियर मेला 2026", category: "education", date: "2026-04-18", time: "10:00 AM", location: "Government Polytechnic", price: "Free", image: "🎓", attendees: 3000, description: "100+ companies recruiting freshers. Bring your resume and certificates." },
-  { id: 6, title: "Marathi Literature Festival", titleMarathi: "मराठी साहित्य महोत्सव", titleHindi: "मराठी साहित्य महोत्सव", category: "culture", date: "2026-04-25", time: "11:00 AM", location: "Shivaji Mandir", price: "₹100", image: "📖", attendees: 800, description: "Meet famous Marathi authors, poetry readings, book launches." },
+
+  {
+    id: 23,
+    title: "Mega Blood Donation Drive & Free Health Checkup Camp",
+    titleMarathi: "मेगा रक्तदान शिबिर आणि मोफत आरोग्य तपासणी कॅम्प",
+    titleHindi: "मेगा रक्तदान शिविर एवं मुफ्त स्वास्थ्य जांच कैंप",
+    category: "health",
+    date: "2026-06-14",
+    time: "8:30 AM",
+    location: "Irwin District Government Hospital Campus, Camp Area, Amravati",
+    price: "Free",
+    image: "🩸",
+    attendees: 2500,
+    description: "Large-scale healthcare and blood donation camp offering free diagnostics, cardiac awareness sessions, and donor support facilities."
+  },
+
+  {
+    id: 24,
+    title: "Super Specialty Cardiac & Orthopedic Diagnostic Camp",
+    titleMarathi: "सुपर स्पेशालिटी कार्डियाक आणि ऑर्थोपेडिक डायग्नोस्टिक कॅम्प",
+    titleHindi: "सुपर स्पेशलिटी कार्डियक एवं ऑर्थोपेडिक डायग्नोस्टिक कैंप",
+    category: "health",
+    date: "2026-07-26",
+    time: "9:00 AM",
+    location: "Zenith Heart & Multispeciality Campus, Walcut Compound, Amravati",
+    price: "Free",
+    image: "❤️",
+    attendees: 1200,
+    description: "Specialized medical camp providing ECG tests, cardiac consultations, orthopedic checkups, and discounted follow-up treatment support."
+  },
+
+  {
+    id: 25,
+    title: "Women & Child Free Wellness Camp",
+    titleMarathi: "महिला आणि बाल मोफत वेलनेस कॅम्प",
+    titleHindi: "महिला एवं बाल मुफ्त वेलनेस कैंप",
+    category: "health",
+    date: "2026-06-20",
+    time: "10:00 AM",
+    location: "Radiant Superspeciality Hospital Unit, Vivekanand Colony, Amravati",
+    price: "Free",
+    image: "👩‍⚕️",
+    attendees: 1800,
+    description: "Healthcare camp focused on women and child wellness, nutrition counseling, pediatric monitoring, and preventive healthcare awareness."
+  },
+
+  {
+    id: 26,
+    title: "Advanced Eye Care & Free Cataract Screening Camp",
+    titleMarathi: "अॅडव्हान्स्ड आय केअर आणि मोफत मोतीबिंदू तपासणी कॅम्प",
+    titleHindi: "एडवांस्ड आई केयर एवं मुफ्त मोतियाबिंद जांच कैंप",
+    category: "health",
+    date: "2026-07-10",
+    time: "9:00 AM",
+    location: "Vyawahare Netralaya & Eye Bank Hub, Gadge Nagar, Amravati",
+    price: "Free",
+    image: "👁️",
+    attendees: 1500,
+    description: "Eye care camp offering free vision testing, cataract screening, retina evaluation, and subsidized eye treatment guidance."
+  },
   { id: 7, title: "Blood Donation Camp", titleMarathi: "रक्तदान शिबिर", titleHindi: "रक्तदान शिविर", category: "health", date: "2026-04-08", time: "9:00 AM", location: "Red Cross Society, Camp Area", price: "Free", image: "🩸", attendees: 300, description: "Organized by Amravati Medical Club. All blood types needed." },
   { id: 8, title: "Yoga & Wellness Workshop", titleMarathi: "योगा आणि वेलनेस कार्यशाळा", titleHindi: "योग और कल्याण कार्यशाला", category: "health", date: "2026-04-14", time: "6:00 AM", location: "Ambapeth Garden", price: "Free", image: "🧘", attendees: 150, description: "Morning yoga session followed by health awareness talk." },
-  { id: 9, title: "Chhatrapati Shivaji Maharaj Jayanti Utsav", titleMarathi: "छत्रपती शिवाजी महाराज जयंती उत्सव", titleHindi: "छत्रपति शिवाजी महाराज जयंती उत्सव", category: "culture", date: "2026-02-19", time: "9:00 AM", location: "Rajkamal Chowk", price: "Free", image: "🚩", attendees: 10000, description: "Grand procession and celebration honoring Chhatrapati Shivaji Maharaj." }
+  { id: 3, title: "PM-KISAN Registration Camp", titleMarathi: "PM-KISAN नोंदणी शिबिर", titleHindi: "पीएम-किसान पंजीकरण शिविर", category: "government", date: "2026-04-10", time: "10:00 AM", location: "Collectorate Office", price: "Free", image: "🏛️", attendees: 500, description: "Free registration camp for PM-KISAN Samman Nidhi. Bring Aadhaar and land documents." },
+
+  {
+    id: 27,
+    title: "PM-Kisan Samman Nidhi e-KYC Correction & Aadhaar Seeding Camp",
+    titleMarathi: "PM-किसान सन्मान निधी e-KYC दुरुस्ती आणि आधार सीडिंग शिबिर",
+    titleHindi: "PM-किसान सम्मान निधि e-KYC सुधार एवं आधार सीडिंग कैंप",
+    category: "government",
+    date: "2026-05-20",
+    time: "9:30 AM",
+    location: "Tehsil Office Premises & Central Krishi Seva Complex, Amravati",
+    price: "Free",
+    image: "🌾",
+    attendees: 3500,
+    description: "Government support camp for PM-Kisan beneficiaries to resolve Aadhaar linkage, e-KYC, and pending installment issues."
+  },
+
+  {
+    id: 28,
+    title: "Maha-E-Seva Civic Identity & Certificate Registration Camp",
+    titleMarathi: "महा-ई-सेवा नागरी ओळख आणि प्रमाणपत्र नोंदणी शिबिर",
+    titleHindi: "महा-ई-सेवा नागरिक पहचान एवं प्रमाणपत्र पंजीकरण कैंप",
+    category: "government",
+    date: "2026-05-28",
+    time: "10:00 AM",
+    location: "District Collectorate Premises, Near Irwin Square, Amravati",
+    price: "₹20",
+    image: "🪪",
+    attendees: 5000,
+    description: "Integrated public service camp for fast-track processing of income, domicile, caste, and civic identity certificates."
+  },
+
+  {
+    id: 29,
+    title: "PM-Kisan New Farmer Registration & Land Mapping Camp",
+    titleMarathi: "PM-किसान नवीन शेतकरी नोंदणी आणि जमीन मॅपिंग शिबिर",
+    titleHindi: "PM-किसान नए किसान पंजीकरण एवं भूमि मैपिंग कैंप",
+    category: "government",
+    date: "2026-06-15",
+    time: "10:00 AM",
+    location: "Krishi Vikas Nodal Office Center, Badnera, Amravati",
+    price: "Free",
+    image: "🚜",
+    attendees: 2200,
+    description: "Agricultural registration drive helping new farmers enroll in PM-Kisan and update land ownership records."
+  },
+
+  {
+    id: 30,
+    title: "Ayushman Bharat-MHA Card & Health Registry Enrolment Drive",
+    titleMarathi: "आयुष्मान भारत-MHA कार्ड आणि हेल्थ रजिस्ट्री नोंदणी मोहीम",
+    titleHindi: "आयुष्मान भारत-MHA कार्ड एवं हेल्थ रजिस्ट्री नामांकन अभियान",
+    category: "government",
+    date: "2026-07-18",
+    time: "9:00 AM",
+    location: "Municipal Ward Administrative Council Lounge, Amravati",
+    price: "Free",
+    image: "🏥",
+    attendees: 4000,
+    description: "Public welfare enrolment drive for Ayushman Bharat smart cards and digital health identity registration."
+  }
+
 ];
 
 export const governmentServices = [
