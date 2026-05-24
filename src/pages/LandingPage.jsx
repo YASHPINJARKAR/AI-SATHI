@@ -147,6 +147,75 @@ export default function LandingPage({ darkMode, setDarkMode }) {
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [activeUtility, setActiveUtility] = useState(null);
 
+  // ─── 3D Map Interactive States & Handlers ───
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0, glareX: 50, glareY: 50, active: false });
+  const [tiltEnabled, setTiltEnabled] = useState(true);
+
+  // 3D Tilt Hover Effect
+  const handleMouseMove = (e) => {
+    if (!tiltEnabled) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Normalize coordinates (-0.5 to 0.5)
+    const normalizedX = (x / rect.width) - 0.5;
+    const normalizedY = (y / rect.height) - 0.5;
+    
+    // Calculate rotation angles (max 15 degrees)
+    const rotateY = normalizedX * 20; 
+    const rotateX = -normalizedY * 20; // Invert to tilt towards cursor
+
+    // Glare position percentage
+    const glareX = (x / rect.width) * 100;
+    const glareY = (y / rect.height) * 100;
+
+    setTilt({ rotateX, rotateY, glareX, glareY, active: true });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ rotateX: 0, rotateY: 0, glareX: 50, glareY: 50, active: false });
+    setIsDragging(false);
+  };
+
+  // Drag to Pan
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return; // Only left click
+    e.preventDefault();
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+  };
+
+  const handleDragMove = (e) => {
+    if (!isDragging) return;
+    const newX = e.clientX - dragStart.x;
+    const newY = e.clientY - dragStart.y;
+    // Bound the pan based on zoom level to keep map in view bounds
+    const maxPan = (zoom - 1) * 300;
+    setPan({
+      x: Math.max(-maxPan - 150, Math.min(maxPan + 150, newX)),
+      y: Math.max(-maxPan - 150, Math.min(maxPan + 150, newY))
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleZoom = (factor) => {
+    setZoom(prev => Math.max(1, Math.min(4, prev * factor)));
+  };
+
+  const handleReset = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+    setTilt({ rotateX: 0, rotateY: 0, glareX: 50, glareY: 50, active: false });
+  };
+
   return (
     <div className="landing-page">
       {/* Navigation Bar */}
@@ -264,6 +333,101 @@ export default function LandingPage({ darkMode, setDarkMode }) {
 
         </div>
       </main>
+
+      {/* ── Interactive 3D Map Section ── */}
+      <section className="map-3d-section animate-fade-in-up">
+        <div className="map-3d-header">
+          <div className="map-3d-badge">
+            🗺️ {language === 'mr' ? '३डी संवादात्मक नकाशा' : language === 'hi' ? '3डी इंटरैक्टिव मानचित्र' : '3D Interactive Map'}
+          </div>
+          <h2 className="map-3d-title">
+            {language === 'mr'
+              ? 'अमरावती ३डी शहर नकाशा'
+              : language === 'hi'
+              ? 'अमरावती 3डी शहर मानचित्र'
+              : 'Amravati 3D Interactive Map'}
+          </h2>
+          <p className="map-3d-subtitle">
+            {language === 'mr'
+              ? '३डी मॉडेलप्रमाणे नकाशा फिरवा. फिरवण्यासाठी माऊस फिरवा, पॅन करण्यासाठी ड्रॅग करा आणि झूम करा.'
+              : language === 'hi'
+              ? '3डी मॉडल की तरह मानचित्र घुमाएँ। घुमाने के लिए माउस हिलाएं, पैन करने के लिए खींचें और ज़ूम करें।'
+              : 'Interact with the map like a 3D model. Move cursor to tilt/rotate, drag to pan, and zoom to explore sectors.'}
+          </p>
+        </div>
+
+        <div className="map-3d-container">
+          <div 
+            className={`map-3d-card ${tilt.active ? 'is-tilting' : ''} ${isDragging ? 'is-dragging' : ''}`}
+            onMouseMove={(e) => {
+              if (isDragging) {
+                handleDragMove(e);
+              } else {
+                handleMouseMove(e);
+              }
+            }}
+            onMouseLeave={handleMouseLeave}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            style={{
+              transform: `perspective(1200px) rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg) scale3d(1.02, 1.02, 1.02)`,
+              transition: tilt.active || isDragging ? 'none' : 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)'
+            }}
+          >
+            {/* Holographic light reflect overlay */}
+            <div 
+              className="map-3d-glare"
+              style={{
+                background: `radial-gradient(circle at ${tilt.glareX}% ${tilt.glareY}%, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 60%)`,
+                opacity: tilt.active ? 1 : 0,
+                transition: tilt.active ? 'none' : 'opacity 0.5s ease'
+              }}
+            />
+
+            {/* Inner Map viewport */}
+            <div className="map-3d-viewport">
+              <img 
+                src="/amravati_map.png.png" 
+                alt="Amravati 3D Map" 
+                className="map-3d-image"
+                draggable="false"
+                style={{
+                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                  transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)'
+                }}
+              />
+            </div>
+
+            {/* Futuristic Tech frame borders and details */}
+            <div className="map-3d-frame-top-left"></div>
+            <div className="map-3d-frame-top-right"></div>
+            <div className="map-3d-frame-bottom-left"></div>
+            <div className="map-3d-frame-bottom-right"></div>
+
+            {/* Floating Markers / Sectors on top of the 3D surface */}
+            <div className="map-3d-overlay-ui">
+              <div className="map-hud-title">AMRAVATI SYS_MAP_v1.0</div>
+              <div className="map-hud-coordinate">LAT: 20.9320° N | LON: 77.7523° E</div>
+            </div>
+          </div>
+
+          {/* Interactive HUD Control Panel */}
+          <div className="map-3d-controls">
+            <button className="map-control-btn" onClick={() => handleZoom(1.2)} title="Zoom In">
+              ➕ {language === 'mr' ? 'झूम वाढवा' : language === 'hi' ? 'ज़ूम बढ़ाएं' : 'Zoom In'}
+            </button>
+            <button className="map-control-btn" onClick={() => handleZoom(0.8)} title="Zoom Out">
+              ➖ {language === 'mr' ? 'झूम कमी करा' : language === 'hi' ? 'ज़ूम कम करें' : 'Zoom Out'}
+            </button>
+            <button className={`map-control-btn ${tiltEnabled ? 'active' : ''}`} onClick={() => setTiltEnabled(!tiltEnabled)}>
+              🕶️ {tiltEnabled ? (language === 'mr' ? '३डी सक्रिय' : language === 'hi' ? '3डी सक्रिय' : '3D Active') : (language === 'mr' ? '३डी बंद' : language === 'hi' ? '3डी बंद' : '3D Off')}
+            </button>
+            <button className="map-control-btn reset" onClick={handleReset}>
+              🔄 {language === 'mr' ? 'रीसेट' : language === 'hi' ? 'रीसेट' : 'Reset'}
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* ── Government Officials Section ── */}
       <section className="officials-section animate-fade-in-up">

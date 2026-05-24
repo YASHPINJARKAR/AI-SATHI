@@ -1070,3 +1070,317 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ===================================================
+   3D Map Interactive Section
+   =================================================== */
+.map-3d-section {
+  position: relative;
+  padding: 80px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  z-index: 10;
+}
+
+.map-3d-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.map-3d-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 109, 0, 0.08);
+  border: 1px solid rgba(255, 109, 0, 0.2);
+  border-radius: 100px;
+  color: #ff6d00;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.map-3d-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+[data-theme="dark"] .map-3d-title {
+  color: #f8fafc;
+}
+
+.map-3d-subtitle {
+  color: #64748b;
+  font-size: 1.05rem;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+[data-theme="dark"] .map-3d-subtitle {
+  color: #94a3b8;
+}
+
+.map-3d-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  perspective: 2000px;
+}
+
+/* Card Container with preserve-3d */
+.map-3d-card {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  height: 520px;
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05),
+              0 1px 3px rgba(0, 0, 0, 0.02);
+  transform-style: preserve-3d;
+  cursor: grab;
+  overflow: hidden;
+  user-select: none;
+}
+
+[data-theme="dark"] .map-3d-card {
+  background: rgba(30, 41, 59, 0.3);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4),
+              0 0 40px rgba(255, 109, 0, 0.03);
+}
+
+.map-3d-card.is-dragging {
+  cursor: grabbing;
+}
+
+.map-3d-card.is-tilting {
+  box-shadow: 0 35px 70px rgba(0, 0, 0, 0.15),
+              0 10px 30px rgba(255, 109, 0, 0.05);
+}
+
+[data-theme="dark"] .map-3d-card.is-tilting {
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5),
+              0 0 50px rgba(255, 109, 0, 0.08);
+}
+
+/* 3D Reflection overlay */
+.map-3d-glare {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  pointer-events: none;
+  border-radius: 24px;
+}
+
+/* Outer frame */
+.map-3d-viewport {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f1f5f9;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transform: translateZ(20px);
+}
+
+[data-theme="dark"] .map-3d-viewport {
+  background: #0f172a;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.map-3d-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Sci-fi tech corners */
+.map-3d-frame-top-left,
+.map-3d-frame-top-right,
+.map-3d-frame-bottom-left,
+.map-3d-frame-bottom-right {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: #ff6d00;
+  border-style: solid;
+  z-index: 10;
+  pointer-events: none;
+  transform: translateZ(40px);
+}
+
+.map-3d-frame-top-left {
+  top: 8px;
+  left: 8px;
+  border-width: 2px 0 0 2px;
+}
+.map-3d-frame-top-right {
+  top: 8px;
+  right: 8px;
+  border-width: 2px 2px 0 0;
+}
+.map-3d-frame-bottom-left {
+  bottom: 8px;
+  left: 8px;
+  border-width: 0 0 2px 2px;
+}
+.map-3d-frame-bottom-right {
+  bottom: 8px;
+  right: 8px;
+  border-width: 0 2px 2px 0;
+}
+
+/* Interactive HUD details */
+.map-3d-overlay-ui {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 6;
+  pointer-events: none;
+  transform: translateZ(35px);
+  padding: 10px 16px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.map-hud-title {
+  color: #f8fafc;
+  font-family: monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 8px rgba(255, 109, 0, 0.5);
+}
+
+.map-hud-coordinate {
+  color: #38bdf8;
+  font-family: monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+}
+
+/* Map HUD buttons */
+.map-3d-controls {
+  display: flex;
+  gap: 12px;
+  z-index: 10;
+  background: rgba(15, 23, 42, 0.02);
+  border: 1px solid rgba(15, 23, 42, 0.05);
+  padding: 8px;
+  border-radius: 100px;
+}
+
+[data-theme="dark"] .map-3d-controls {
+  background: rgba(30, 41, 59, 0.4);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.map-control-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 100px;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .map-control-btn {
+  background: #1e293b;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+}
+
+.map-control-btn:hover {
+  transform: translateY(-2px);
+  background: #f8fafc;
+  color: #ff6d00;
+  border-color: rgba(255, 109, 0, 0.3);
+  box-shadow: 0 4px 8px rgba(255, 109, 0, 0.05);
+}
+
+[data-theme="dark"] .map-control-btn:hover {
+  background: #334155;
+  color: #ff6d00;
+  border-color: rgba(255, 109, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.map-control-btn:active {
+  transform: translateY(0);
+}
+
+.map-control-btn.active {
+  background: rgba(255, 109, 0, 0.08);
+  color: #ff6d00;
+  border-color: rgba(255, 109, 0, 0.3);
+}
+
+.map-control-btn.reset {
+  color: #64748b;
+}
+
+.map-control-btn.reset:hover {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+/* Mobile responsive fixes */
+@media (max-width: 768px) {
+  .map-3d-section {
+    padding: 40px 16px;
+  }
+  .map-3d-title {
+    font-size: 2rem;
+  }
+  .map-3d-card {
+    height: 380px;
+  }
+  .map-3d-overlay-ui {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+  }
+  .map-3d-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+    border-radius: 16px;
+    gap: 8px;
+  }
+}
