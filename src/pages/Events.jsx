@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, MapPin, Users, Clock, Search, Tag, X, Phone, IndianRupee, Share2, CheckCircle, User, Smartphone, ChevronRight } from 'lucide-react';
 import { events } from '../data/mockData';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import './Events.css';
+
+const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_STWlHOWr2gQf1F';
 
 const eventCategories = [
   { id: 'all', label: 'All Events', labelMarathi: 'सर्व कार्यक्रम', labelHindi: 'सभी कार्यक्रम', icon: '📅' },
@@ -28,6 +30,18 @@ const eventDetails = {
   9: { contact: '+91 9823100009', organizer: 'Shivaji Jayanti Samiti', fee: 'Free', maxPeople: 10 },
 };
 
+// Load Razorpay script dynamically
+function loadRazorpayScript() {
+  return new Promise((resolve) => {
+    if (window.Razorpay) { resolve(true); return; }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 export default function Events() {
   const { language } = useLanguage();
   const { requireAuth } = useAuth();
@@ -40,6 +54,13 @@ export default function Events() {
   const [form, setForm] = useState({ name: '', mobile: '', email: '', people: 1, notes: '' });
   const [formErrors, setFormErrors] = useState({});
   const [shareToast, setShareToast] = useState('');
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentId, setPaymentId] = useState('');
+
+  // Preload Razorpay script when component mounts
+  useEffect(() => {
+    loadRazorpayScript();
+  }, []);
 
   const filtered = events.filter(e => {
     const matchCat = activeCategory === 'all' || e.category === activeCategory;
@@ -58,11 +79,13 @@ export default function Events() {
     setModalStep('detail');
     setForm({ name: '', mobile: '', email: '', people: 1, notes: '' });
     setFormErrors({});
+    setPaymentId('');
   };
 
   const closeModal = () => {
     setSelectedEvent(null);
     setModalStep('detail');
+    setPaymentLoading(false);
   };
 
   // Validate form
@@ -83,28 +106,107 @@ export default function Events() {
     return errs;
   };
 
+  // Save registration to localStorage and show success
+  const completeRegistration = (pid) => {
+    const registrations = JSON.parse(localStorage.getItem('ai_sathi_event_registrations') || '[]');
+    const newReg = {
+      id: 'reg_' + Date.now(),
+      userName: form.name,
+      userEmail: form.email || 'N/A',
+      userPhone: form.mobile,
+      eventTitle: language === 'mr' ? selectedEvent.titleMarathi : language === 'hi' ? (selectedEvent.titleHindi || selectedEvent.title) : selectedEvent.title,
+      people: form.people,
+      notes: form.notes || 'N/A',
+      registeredAt: new Date().toLocaleDateString(),
+      paymentId: pid || 'FREE',
+      paymentStatus: pid ? 'paid' : 'free',
+    };
+    registrations.unshift(newReg);
+    localStorage.setItem('ai_sathi_event_registrations', JSON.stringify(registrations));
+    setPaymentId(pid || '');
+    setPaymentLoading(false);
+    setModalStep('success');
+  };
+
+  // Initiate Razorpay payment for paid events
+  const initiateRazorpayPayment = async (totalAmount) => {
+    setPaymentLoading(true);
+
+    const loaded = await loadRazorpayScript();
+    if (!loaded) {
+      setPaymentLoading(false);
+      alert('Failed to load payment gateway. Please check your internet connection.');
+      return;
+    }
+
+    const eventTitle = language === 'mr' ? selectedEvent.titleMarathi : language === 'hi' ? (selectedEvent.titleHindi || selectedEvent.title) : selectedEvent.title;
+
+    const options = {
+      key: RAZORPAY_KEY_ID,
+      amount: totalAmount * 100, // in paise
+      currency: 'INR',
+      name: 'AI Sathi',
+      description: `Registration: ${eventTitle} (${form.people} person${form.people > 1 ? 's' : ''})`,
+      image: 'https://i.imgur.com/n5tjHFD.png',
+      handler: function (response) {
+        // Payment successful
+        completeRegistration(response.razorpay_payment_id);
+      },
+      prefill: {
+        name: form.name,
+        email: form.email || '',
+        contact: `+91${form.mobile}`,
+      },
+      notes: {
+        event_id: String(selectedEvent.id),
+        people: String(form.people),
+        special_notes: form.notes || '',
+      },
+      theme: {
+        color: '#6366f1',
+      },
+      modal: {
+        ondismiss: function () {
+          setPaymentLoading(false);
+        },
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.on('payment.failed', function () {
+      setPaymentLoading(false);
+      alert(
+        language === 'mr'
+          ? 'पेमेंट अयशस्वी झाले. कृपया पुन्हा प्रयत्न करा.'
+          : language === 'hi'
+          ? 'भुगतान विफल हुआ। कृपया पुनः प्रयास करें।'
+          : 'Payment failed. Please try again.'
+      );
+    });
+    rzp.open();
+  };
+
   // Submit registration
   const handleSubmit = (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
-    requireAuth(() => {
-      // Save registration to local storage
-      const registrations = JSON.parse(localStorage.getItem('ai_sathi_event_registrations') || '[]');
-      const newReg = {
-        id: 'reg_' + Date.now(),
-        userName: form.name,
-        userEmail: form.email || 'N/A',
-        userPhone: form.mobile,
-        eventTitle: language === 'mr' ? selectedEvent.titleMarathi : language === 'hi' ? (selectedEvent.titleHindi || selectedEvent.title) : selectedEvent.title,
-        people: form.people,
-        notes: form.notes || 'N/A',
-        registeredAt: new Date().toLocaleDateString()
-      };
-      registrations.unshift(newReg);
-      localStorage.setItem('ai_sathi_event_registrations', JSON.stringify(registrations));
 
-      setModalStep('success');
+    requireAuth(() => {
+      const isFree = selectedEvent.price === 'Free' || selectedEvent.price === '0' || !selectedEvent.price;
+      if (isFree) {
+        // Free event — skip payment
+        completeRegistration(null);
+      } else {
+        // Paid event — calculate amount and trigger Razorpay
+        const pricePerPerson = parseInt(selectedEvent.price.replace(/[^\d]/g, ''), 10) || 0;
+        const totalAmount = pricePerPerson * form.people;
+        if (totalAmount <= 0) {
+          completeRegistration(null);
+        } else {
+          initiateRazorpayPayment(totalAmount);
+        }
+      }
     });
   };
 
@@ -141,6 +243,10 @@ export default function Events() {
   };
 
   const detail = selectedEvent ? (eventDetails[selectedEvent.id] || { contact: '+91 9800000000', organizer: 'Event Committee', fee: selectedEvent.price, maxPeople: 5 }) : null;
+  const isPaidEvent = selectedEvent && selectedEvent.price !== 'Free' && selectedEvent.price !== '0' && !!selectedEvent.price;
+  const totalFee = selectedEvent && isPaidEvent
+    ? parseInt(selectedEvent.price.replace(/[^\d]/g, ''), 10) * form.people
+    : 0;
 
   return (
     <div className="page-container events-page">
@@ -425,12 +531,42 @@ export default function Events() {
                     </strong>
                   </div>
 
+                  {/* Razorpay notice for paid events */}
+                  {isPaidEvent && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      background: 'rgba(99,102,241,0.08)',
+                      border: '1px solid rgba(99,102,241,0.25)',
+                      fontSize: '0.78rem',
+                      color: 'var(--text-secondary)',
+                      marginBottom: '8px',
+                    }}>
+                      <span>🔒</span>
+                      <span>
+                        {language === 'mr'
+                          ? `सुरक्षित पेमेंट Razorpay द्वारे · ₹${totalFee} देय`
+                          : language === 'hi'
+                          ? `Razorpay द्वारा सुरक्षित भुगतान · ₹${totalFee} देय`
+                          : `Secure payment via Razorpay · ₹${totalFee} payable`}
+                      </span>
+                    </div>
+                  )}
+
                   <div className="event-modal-actions">
-                    <button type="button" className="btn btn-outline" onClick={() => setModalStep('detail')}>
+                    <button type="button" className="btn btn-outline" onClick={() => setModalStep('detail')} disabled={paymentLoading}>
                       ← {language === 'mr' ? 'मागे' : language === 'hi' ? 'पीछे' : 'Back'}
                     </button>
-                    <button type="submit" className="btn btn-accent" style={{ flex: 1 }}>
-                      {language === 'mr' ? 'नोंदणी पूर्ण करा' : language === 'hi' ? 'पंजीकरण पूर्ण करें' : 'Confirm Registration'}
+                    <button type="submit" className="btn btn-accent" style={{ flex: 1 }} disabled={paymentLoading}>
+                      {paymentLoading
+                        ? (language === 'mr' ? '⏳ पेमेंट...' : language === 'hi' ? '⏳ भुगतान...' : '⏳ Processing...')
+                        : isPaidEvent
+                          ? (language === 'mr' ? `💳 ₹${totalFee} भरा` : language === 'hi' ? `💳 ₹${totalFee} भुगतान करें` : `💳 Pay ₹${totalFee}`)
+                          : (language === 'mr' ? 'नोंदणी पूर्ण करा' : language === 'hi' ? 'पंजीकरण पूर्ण करें' : 'Confirm Registration')
+                      }
                     </button>
                   </div>
                 </form>
@@ -456,6 +592,11 @@ export default function Events() {
                   <div>📍 {selectedEvent.location}</div>
                   <div>👥 {form.people} {form.people === 1 ? 'Person' : 'People'}</div>
                   <div>📞 {form.mobile}</div>
+                  {paymentId && (
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                      ✅ {language === 'mr' ? 'पेमेंट आयडी:' : language === 'hi' ? 'भुगतान ID:' : 'Payment ID:'} {paymentId}
+                    </div>
+                  )}
                 </div>
                 <p className="success-hint">
                   {language === 'mr' 
