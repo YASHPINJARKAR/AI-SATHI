@@ -1076,8 +1076,8 @@
    =================================================== */
 .map-3d-section {
   position: relative;
-  padding: 80px 24px;
-  max-width: 1200px;
+  padding: 80px 48px;
+  max-width: 1440px;
   margin: 0 auto;
   z-index: 10;
 }
@@ -1140,8 +1140,8 @@
 .map-3d-card {
   position: relative;
   width: 100%;
-  max-width: 1140px;
-  height: 560px;
+  max-width: 1340px;
+  height: 600px;
   background: rgba(15, 23, 42, 0.03);
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 24px;
