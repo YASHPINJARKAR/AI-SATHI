@@ -10,7 +10,7 @@ import './Chat.css';
 // ── Gemini AI Setup ──────────────────────────────────────────────
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
-const GEMINI_MODEL = 'gemini-2.5-flash'; // Confirmed working model
+const GEMINI_MODEL = 'gemini-3.1-flash-lite'; // Confirmed working model
 
 const SYSTEM_PROMPT = `You are **Ai Sathi** (AI साथी), a smart, friendly, and helpful digital assistant built specifically for the citizens of **Amravati city, Maharashtra, India**, but capable of answering any question from the user.
 
@@ -113,12 +113,29 @@ export default function Chat() {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [isVoiceMode, setIsVoiceMode] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const chatRef = useRef(null);
   const handleSendRef = useRef(null); // keeps toggleVoice closure fresh
+  const recognitionRef = useRef(null);
+
+  // Cleanup speech recognition and synthesis on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch (err) {
+          console.error('Error aborting speech recognition on unmount:', err);
+        }
+      }
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
   // Update welcome message if user switches language before chatting
   useEffect(() => {
@@ -168,37 +185,55 @@ export default function Chat() {
   useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
 
   // ── Text-to-Speech ────────────────────────────────────────────
-  const speakText = useCallback((text) => {
-    if (!isVoiceMode) return;
+  const voicesLoadedRef = useRef([]);
+
+  // Load voices as soon as they are available (Chrome loads them async)
+  useEffect(() => {
+    const loadVoices = () => {
+      voicesLoadedRef.current = window.speechSynthesis.getVoices() || [];
+    };
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    return () => {
+      if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
+  const speakText = useCallback((text, force = false) => {
+    if (!isVoiceMode && !force) return;
     window.speechSynthesis.cancel();
     const cleanText = text.replace(/[*_#\[\]]/g, '').replace(/\n/g, '. ');
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    
+
+    // Set the lang tag — browser uses this even without an explicit voice
     const targetLang = language === 'mr' ? 'mr-IN' : language === 'hi' ? 'hi-IN' : 'en-IN';
     utterance.lang = targetLang;
-    
-    // Get voices (might need to handle async loading in some browsers)
-    let voices = window.speechSynthesis.getVoices();
-    
+
+    // Only assign a voice when we find a REAL language match.
+    // Never fall back to a Hindi/Indian voice for English or Marathi —
+    // doing so overrides the lang tag and forces Hindi speech.
+    const voices = voicesLoadedRef.current;
     if (voices.length > 0) {
-      // Look for exact match, then language match, then any Indian voice
-      const preferredVoice = voices.find(v => v.lang.replace('_', '-').toLowerCase() === targetLang.toLowerCase()) 
-                          || voices.find(v => v.lang.toLowerCase().startsWith(language.toLowerCase()))
-                          || (language === 'mr' || language === 'hi' ? voices.find(v => v.lang.includes('IN')) : null);
-                          
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
+      // 1. Exact locale match (e.g. 'en-IN', 'hi-IN')
+      let matched = voices.find(v =>
+        v.lang.replace('_', '-').toLowerCase() === targetLang.toLowerCase()
+      );
+      // 2. Same language prefix (e.g. 'en', 'hi', 'mr')
+      if (!matched) {
+        matched = voices.find(v =>
+          v.lang.toLowerCase().startsWith(language.toLowerCase())
+        );
+      }
+      // Only set if we actually found a match — don't force an unrelated voice
+      if (matched) {
+        utterance.voice = matched;
       }
     }
-    
-    utterance.rate = (language === 'mr' || language === 'hi') ? 0.9 : 1.0; 
-    window.speechSynthesis.speak(utterance);
+
+    utterance.rate = (language === 'mr' || language === 'hi') ? 0.9 : 1.0;
+    // Small delay — Chrome bug workaround
+    setTimeout(() => window.speechSynthesis.speak(utterance), 80);
   }, [isVoiceMode, language]);
-  
-  // Ensure voices are loaded for Chrome/Android
-  useEffect(() => {
-    window.speechSynthesis.onvoiceschanged = () => {};
-  }, []);
 
   // ── Image Upload ──────────────────────────────────────────────
   const handleImageSelect = (e) => {
@@ -262,6 +297,12 @@ export default function Chat() {
 
   // ── Send Message ──────────────────────────────────────────────
   const handleSend = useCallback(async (text = '') => {
+    // Prime speech synthesis on user gesture before async call
+    if (isVoiceMode && window.speechSynthesis) {
+      const unlock = new SpeechSynthesisUtterance('');
+      unlock.volume = 0;
+      window.speechSynthesis.speak(unlock);
+    }
     requireAuth(async () => {
       const messageText = text || input.trim();
       if ((!messageText && !selectedImage) || isTyping) return;
@@ -301,7 +342,7 @@ export default function Chat() {
   };
 
   // ── Voice Input ───────────────────────────────────────────────
-  const toggleVoice = useCallback(() => {
+  const toggleVoice = useCallback(async () => {
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
       alert(language === 'mr'
         ? 'हा ब्राउझर व्हॉइस रिकग्निशन सपोर्ट करत नाही. कृपया Chrome वापरा.'
@@ -310,20 +351,72 @@ export default function Chat() {
         : 'Voice recognition is not supported in this browser. Please use Chrome.');
       return;
     }
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
     if (isListening) {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch (err) {
+          console.error('Error aborting speech recognition:', err);
+        }
+        recognitionRef.current = null;
+      }
       setIsListening(false);
       return;
     }
+
+    // Prime speech synthesis on user gesture
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      const unlock = new SpeechSynthesisUtterance('');
+      unlock.volume = 0;
+      window.speechSynthesis.speak(unlock);
+    }
+
+    // Force prompt using getUserMedia
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Clean up the stream immediately after checking permission
+        stream.getTracks().forEach(track => track.stop());
+      }
+    } catch (e) {
+      console.error('Microphone permission request failed:', e);
+      if (!window.isSecureContext) {
+        alert(language === 'mr'
+          ? 'मायक्रोफोनला परवानगी नाकारली आहे. असुरक्षित कनेक्शन (HTTP) मुळे ब्राउझर माइक ब्लॉक करतो. कृपया localhost किंवा HTTPS वापरा.'
+          : language === 'hi'
+          ? 'माइक्रोफ़ोन एक्सेस अस्वीकृत। असुरक्षित कनेक्शन (HTTP) के कारण ब्राउज़र माइक ब्लॉक करता है। कृपया localhost या HTTPS का उपयोग करें।'
+          : 'Microphone access denied. Browser blocks mic on unsecure HTTP connections. Please use localhost or HTTPS.');
+      } else {
+        alert(language === 'mr'
+          ? 'मायक्रोफोनला परवानगी नाकारली आहे. कृपया ब्राउझर URL बारमधील लॉक चिन्हावर क्लिक करून परवानगी द्या.'
+          : language === 'hi'
+          ? 'माइक्रोफ़ोन एक्सेस अस्वीकृत। कृपया ब्राउज़र URL बार में लॉक आइकन पर क्लिक करके अनुमति दें।'
+          : 'Microphone access denied. Please click the lock icon in the browser URL bar to allow access.');
+      }
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognition.lang = language === 'mr' ? 'mr-IN' : language === 'hi' ? 'hi-IN' : 'en-IN';
     recognition.continuous = false;
     recognition.interimResults = false;
     
+    recognitionRef.current = recognition;
     setIsListening(true);
     setIsVoiceMode(true); // Auto-enable voice response when user speaks
     
     recognition.onresult = (event) => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (err) {
+          console.error('Error stopping recognition:', err);
+        }
+        recognitionRef.current = null;
+      }
       const transcript = event.results[0][0].transcript;
       setInput(transcript);
       setIsListening(false);
@@ -334,25 +427,28 @@ export default function Chat() {
     };
     
     recognition.onerror = (e) => {
+      recognitionRef.current = null;
       setIsListening(false);
       console.error('Speech recognition error:', e.error);
-      if (e.error === 'not-allowed' && !window.isSecureContext) {
-        alert(language === 'mr' 
-          ? 'मायक्रोफोनला परवानगी नाकारली आहे. (लोकल HTTP नेटवर्कवर ब्राऊजर माइक ब्लॉक करतो. कृपया टाइप करा.)'
+      if (e.error === 'not-allowed') {
+        alert(language === 'mr'
+          ? 'मायक्रोफोनला परवानगी नाकारली आहे. कृपया ब्राउझर URL बारमधील लॉक चिन्हावर क्लिक करून परवानगी द्या.'
           : language === 'hi'
-          ? 'माइक्रोफ़ोन एक्सेस अस्वीकृत। (मोबाइल ब्राउज़र लोकल HTTP टेस्टिंग नेटवर्क पर माइक ब्लॉक करते हैं। कृपया टाइप करें।)'
-          : 'Microphone access denied. (Mobile browsers block the mic on local HTTP testing networks. Please type instead.)');
-      } else if (e.error === 'not-allowed') {
-        alert(language === 'mr' ? 'कृपया मायक्रोफोनला परवानगी द्या.' : language === 'hi' ? 'कृपया माइक्रोफ़ोन एक्सेस की अनुमति दें।' : 'Please allow microphone access.');
+          ? 'माइक्रोफ़ोन एक्सेस अस्वीकृत। कृपया ब्राउज़र URL बार में लॉक आइकन पर क्लिक करके अनुमति दें।'
+          : 'Microphone access denied. Please click the lock icon in the browser URL bar to allow access.');
       }
     };
     
-    recognition.onend = () => setIsListening(false);
+    recognition.onend = () => {
+      recognitionRef.current = null;
+      setIsListening(false);
+    };
     
     try {
       recognition.start();
     } catch (err) {
       console.error('Speech recognition start error:', err);
+      recognitionRef.current = null;
       setIsListening(false);
     }
   }, [language, isListening]); // handleSend accessed via ref — no stale closure
@@ -483,8 +579,18 @@ export default function Chat() {
           <button
             className={`badge ${isVoiceMode ? 'badge-accent' : 'badge-outline'}`}
             onClick={() => {
-              setIsVoiceMode(!isVoiceMode);
-              if (isVoiceMode) window.speechSynthesis.cancel();
+              const nextMode = !isVoiceMode;
+              setIsVoiceMode(nextMode);
+              if (nextMode) {
+                if (window.speechSynthesis) {
+                  window.speechSynthesis.cancel();
+                  const unlock = new SpeechSynthesisUtterance('');
+                  unlock.volume = 0;
+                  window.speechSynthesis.speak(unlock);
+                }
+              } else {
+                window.speechSynthesis.cancel();
+              }
             }}
             title={language === 'mr' ? 'आवाज उत्तर टॉगल करा' : language === 'hi' ? 'आवाज़ उत्तर टॉगल करें' : 'Toggle Voice Responses'}
             style={{ cursor: 'pointer', border: 'none' }}
@@ -542,10 +648,35 @@ export default function Chat() {
               <div className="message-bubble">
                 {formatMessage(msg.text)}
               </div>
-              <span className="message-time">
-                <Clock size={10} />
-                {msg.timestamp.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-              </span>
+              <div className="message-meta-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                <span className="message-time">
+                  <Clock size={10} />
+                  {msg.timestamp.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+                {msg.type === 'bot' && (
+                  <button
+                    className="msg-speak-btn"
+                    onClick={() => speakText(msg.text, true)}
+                    title={language === 'mr' ? 'ऐका' : language === 'hi' ? 'सुनें' : 'Speak message'}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-tertiary)',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '2px',
+                      borderRadius: '4px',
+                      transition: 'all 0.2s',
+                      opacity: 0.7
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
+                  >
+                    <Volume2 size={13} />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}

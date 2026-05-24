@@ -301,3 +301,19 @@ a[href*="spline"],
     border-radius: 20px;
   }
 }
+
+/* Mobile Fallback content */
+.spline-mobile-content {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: mobileOrbFloat 6s ease-in-out infinite;
+}
+
+.spline-mobile-bot-icon {
+  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
+}
+

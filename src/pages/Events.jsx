@@ -3,6 +3,7 @@ import { Calendar, MapPin, Users, Clock, Search, Tag, X, Phone, IndianRupee, Sha
 import { events } from '../data/mockData';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { sendPaymentConfirmationEmail } from '../emailService';
 import './Events.css';
 
 const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_STWlHOWr2gQf1F';
@@ -109,12 +110,13 @@ export default function Events() {
   // Save registration to localStorage and show success
   const completeRegistration = (pid) => {
     const registrations = JSON.parse(localStorage.getItem('ai_sathi_event_registrations') || '[]');
+    const eventTitle = language === 'mr' ? selectedEvent.titleMarathi : language === 'hi' ? (selectedEvent.titleHindi || selectedEvent.title) : selectedEvent.title;
     const newReg = {
       id: 'reg_' + Date.now(),
       userName: form.name,
       userEmail: form.email || 'N/A',
       userPhone: form.mobile,
-      eventTitle: language === 'mr' ? selectedEvent.titleMarathi : language === 'hi' ? (selectedEvent.titleHindi || selectedEvent.title) : selectedEvent.title,
+      eventTitle,
       people: form.people,
       notes: form.notes || 'N/A',
       registeredAt: new Date().toLocaleDateString(),
@@ -123,6 +125,21 @@ export default function Events() {
     };
     registrations.unshift(newReg);
     localStorage.setItem('ai_sathi_event_registrations', JSON.stringify(registrations));
+
+    // Send Razorpay payment confirmation email from aisummit31@gmail.com
+    if (pid && form.email) {
+      const pricePerPerson = parseInt(selectedEvent.price.replace(/[^\d]/g, ''), 10) || 0;
+      const totalAmount = pricePerPerson * form.people;
+      sendPaymentConfirmationEmail({
+        email:      form.email,
+        name:       form.name,
+        eventTitle,
+        people:     form.people,
+        amount:     totalAmount,
+        paymentId:  pid,
+      });
+    }
+
     setPaymentId(pid || '');
     setPaymentLoading(false);
     setModalStep('success');

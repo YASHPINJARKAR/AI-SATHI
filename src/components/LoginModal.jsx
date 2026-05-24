@@ -4,6 +4,7 @@ import { useLanguage } from '../LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { X, Mail, Lock, User, Globe } from 'lucide-react';
 import './LoginModal.css';
+import { sendRegistrationEmail, sendLoginEmail } from '../emailService';
 import { auth, googleProvider } from '../firebase';
 import { 
   signInWithPopup,
@@ -46,6 +47,9 @@ export default function LoginModal() {
         
         // Send Verification Email
         await sendEmailVerification(user);
+        
+        // Send welcome / registration confirmation email from aisummit31@gmail.com
+        await sendRegistrationEmail({ email: user.email, name: name });
         
         // Sign them out immediately so they have to verify first
         await signOut(auth);
@@ -98,6 +102,9 @@ export default function LoginModal() {
           );
           return;
         }
+        
+        // Send login confirmation email from aisummit31@gmail.com
+        sendLoginEmail({ email: user.email, name: user.displayName || 'User' });
         
         login({
           name: user.displayName || 'User',
@@ -155,6 +162,9 @@ export default function LoginModal() {
         // On desktop, use popup
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
+        
+        // Send login confirmation email from aisummit31@gmail.com
+        sendLoginEmail({ email: user.email, name: user.displayName || 'Google User' });
         
         login({
           name: user.displayName || 'Google User',

@@ -1,4 +1,5 @@
-import React, { Suspense, lazy, useState, useCallback, useRef } from 'react';
+import React, { Suspense, lazy, useState, useCallback, useRef, useEffect } from 'react';
+import { Bot } from 'lucide-react';
 import './SplineScene.css';
 
 // Lazy-load the heavy Spline component — only downloaded when needed
@@ -42,6 +43,9 @@ function SplineMobileFallback() {
       <div className="spline-mobile-orb" />
       <div className="spline-mobile-ring spline-mobile-ring--1" />
       <div className="spline-mobile-ring spline-mobile-ring--2" />
+      <div className="spline-mobile-content">
+        <Bot size={48} className="spline-mobile-bot-icon" />
+      </div>
       <div className="spline-mobile-particles">
         {[...Array(6)].map((_, i) => (
           <span key={i} className="spline-mobile-particle" style={{ '--i': i }} />
@@ -77,15 +81,34 @@ export default function SplineScene({
   onLoad,
   style = {},
 }) {
+  const [isMobile, setIsMobile] = useState(true);
   const [loaded, setLoaded] = useState(false);
   const splineRef = useRef(null);
   const wrapperRef = useRef(null);
 
-  // Detect mobile — skip WebGL on low-end devices
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  // Detect mobile/WebGL capability
+  useEffect(() => {
+    const checkWebGL = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        const supportsWebGL = !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+        
+        // Force mobile fallback on mobile devices or smaller screens (<= 1024px)
+        const isMobileScreen = window.innerWidth <= 1024 || /Mobi|Android/i.test(navigator.userAgent);
+        
+        setIsMobile(!supportsWebGL || isMobileScreen);
+      } catch (e) {
+        setIsMobile(true);
+      }
+    };
+    checkWebGL();
+
+    window.addEventListener('resize', checkWebGL);
+    return () => window.removeEventListener('resize', checkWebGL);
+  }, []);
 
   // Remove any "Built with Spline" watermark/logo from DOM using MutationObserver
-  React.useEffect(() => {
+  useEffect(() => {
     if (isMobile) return;
 
     const removeLogo = (root) => {

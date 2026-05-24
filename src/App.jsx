@@ -49,7 +49,7 @@ function AppContent({ collapsed, setCollapsed, darkMode, setDarkMode }) {
         />
       )}
       {!isAdminMode && <TopRightProfile darkMode={darkMode} setDarkMode={setDarkMode} />}
-      <main 
+      <main
         className={`main-content ${collapsed ? 'collapsed' : ''} ${isAdminMode ? 'admin-mode' : ''}`}
         onClick={() => {
           if (!collapsed && window.innerWidth > 768 && !isAdminMode) {
@@ -92,11 +92,11 @@ function App() {
     <AuthProvider>
       <LanguageProvider>
         <Router>
-          <AppContent 
-            collapsed={collapsed} 
-            setCollapsed={setCollapsed} 
-            darkMode={darkMode} 
-            setDarkMode={setDarkMode} 
+          <AppContent
+            collapsed={collapsed}
+            setCollapsed={setCollapsed}
+            darkMode={darkMode}
+            setDarkMode={setDarkMode}
           />
         </Router>
       </LanguageProvider>

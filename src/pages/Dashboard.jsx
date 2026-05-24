@@ -8,6 +8,7 @@ import DeveloperModal from '../components/DeveloperModal';
 import WeatherWidget from '../components/WeatherWidget';
 import AmravatiInfoTree from '../components/AmravatiInfoTree';
 import SplineScene from '../components/SplineScene';
+import VoiceAssistant from '../components/VoiceAssistant';
 import './Dashboard.css';
 
 const stats = [
@@ -102,12 +103,47 @@ export default function Dashboard() {
     return (labels[language] || labels.en)[key];
   };
 
-  const topBusinesses = businesses.filter(b => b.rating >= 4.4).slice(0, 4);
+  const topBusinesses = [
+    'restaurant',
+    'hospital',
+    'pharmacy',
+    'education', // school/colleges
+    'coaching',
+    'hotel',
+    'gym',
+    'atm'
+  ].map(catId => {
+    const filtered = businesses.filter(b => {
+      if (catId === 'education') {
+        return b.category === 'school' || b.category === 'college';
+      }
+      return b.category === catId;
+    });
+    const sorted = [...filtered].sort((a, b) => {
+      if (b.rating !== a.rating) {
+        return b.rating - a.rating;
+      }
+      return (b.reviews || 0) - (a.reviews || 0);
+    });
+    return sorted[0];
+  }).filter(Boolean);
+
   const upcomingEvents = events.slice(0, 3);
 
   const [feedback, setFeedback] = useState({ rating: 0, view: '', suggestion: '' });
   const [submitted, setSubmitted] = useState(false);
   const [isDevModalOpen, setIsDevModalOpen] = useState(false);
+  const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+
+  const handleOpenVoice = () => {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance('');
+      u.volume = 0;
+      window.speechSynthesis.speak(u);
+    }
+    setIsVoiceOpen(true);
+  };
 
   const handleFeedbackSubmit = (e) => {
     e.preventDefault();
@@ -176,7 +212,15 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
-        <div className="hero-visual">
+        <div
+          className="hero-visual hero-visual-clickable"
+          onClick={handleOpenVoice}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && handleOpenVoice()}
+          title={language === 'mr' ? 'आवाज सहाय्यक उघडा' : language === 'hi' ? 'वॉइस असिस्टेंट खोलें' : 'Open Voice Assistant'}
+          aria-label="Open Voice Assistant"
+        >
           <div className="hero-graphic">
             <div className="hero-circle c1"></div>
             <div className="hero-circle c2"></div>
@@ -184,6 +228,10 @@ export default function Dashboard() {
             <div className="hero-spline-container">
               <SplineScene scene="https://prod.spline.design/WqoBF8iX9a2omOrk/scene.splinecode" />
             </div>
+          </div>
+          <div className="hero-voice-hint">
+            <Mic size={14} />
+            <span>{language === 'mr' ? 'दाबा आणि बोला' : language === 'hi' ? 'दबाएं और बोलें' : 'Tap to speak'}</span>
           </div>
         </div>
       </section>
@@ -374,6 +422,13 @@ export default function Dashboard() {
 
       {/* Developer Modal Overlay */}
       <DeveloperModal isOpen={isDevModalOpen} onClose={() => setIsDevModalOpen(false)} />
+
+      {/* Voice Assistant Overlay */}
+      <VoiceAssistant
+        isOpen={isVoiceOpen}
+        onClose={() => setIsVoiceOpen(false)}
+        initialLanguage={language}
+      />
     </div>
   );
 }

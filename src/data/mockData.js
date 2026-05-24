@@ -86,11 +86,11 @@ export const businesses = [
 
   { id: 7, name: "Aadarsh Hotel", nameMarathi: "आदर्श हॉटेल", nameHindi: "आदर्श होटल", category: "restaurant", rating: 4.2, reviews: 600, address: "Cotton Market, Amravati, Maharashtra", phone: "+91 9822587989", hours: "11:00 AM - 11:00 PM", tags: ["Family", "Multi-cuisine"], image: "🍽️", isOpen: true },
 
-  { id: 8, name: "7 Doors Kitchen & Family Restaurant", nameMarathi: "7 डोअर्स किचन अँड फॅमिली रेस्टॉरंट", nameHindi: "7 डोर्स किचन एंड फैमिली रेस्तरां", category: "restaurant", rating: 4.2, reviews: 810, address: "Ring Road, Amravati, Maharashtra", phone: "+91 9825879489", hours: "11:00 AM - 11:00 PM", tags: ["Family", "Multi-cuisine"], image: "🍽️", isOpen: true },
+  { id: 8, name: "7 Doors Kitchen & Family Restaurant", nameMarathi: "7 डोअर्स किचन अँड फॅमिली रेस्टॉरंट", nameHindi: "7 डोर्स किचन एंड फैमिली रेस्तरां", category: "restaurant", rating: 4.2, reviews: 980, address: "Ring Road, Amravati, Maharashtra", phone: "+91 9825879489", hours: "11:00 AM - 11:00 PM", tags: ["Family", "Multi-cuisine"], image: "🍽️", isOpen: true },
 
   { id: 9, name: "Punjabi Dhaba", nameMarathi: "पंजाबी ढाबा", nameHindi: "पंजाबी ढाबा", category: "restaurant", rating: 4.2, reviews: 930, address: "Behind Bonde Hospital Rajapeth, Amravati, Maharashtra", phone: "+91 9822314689", hours: "11:00 AM - 11:00 PM", tags: ["Punjabi", "Family", "Dhaba"], image: "🍽️", isOpen: true },
 
-  { id: 10, name: "Khamaz Biryani", nameMarathi: "खमाज बिर्याणी", nameHindi: "खमाज बिरयानी", category: "restaurant", rating: 4.2, reviews: 980, address: "Pote Patil Road, Amravati, Maharashtra", phone: "+91 9823428089", hours: "11:00 AM - 11:00 PM", tags: ["Biryani", "Non-Veg", "Family"], image: "🍗", isOpen: true },
+  { id: 10, name: "Khamaz Biryani", nameMarathi: "खमाज बिर्याणी", nameHindi: "खमाज बिरयानी", category: "restaurant", rating: 4.2, reviews: 810, address: "Pote Patil Road, Amravati, Maharashtra", phone: "+91 9823428089", hours: "11:00 AM - 11:00 PM", tags: ["Biryani", "Non-Veg", "Family"], image: "🍗", isOpen: true },
 
   { id: 11, name: "Ramayan Pure Veg Restaurant", nameMarathi: "रामायण प्युअर व्हेज रेस्टॉरंट", nameHindi: "रामायण प्योर वेज रेस्तरां", category: "restaurant", rating: 4.2, reviews: 710, address: "Ring Road, Amravati, Maharashtra", phone: "+91 982258879", hours: "11:00 AM - 11:00 PM", tags: ["Pure Veg", "Family"], image: "🥗", isOpen: true },
 
@@ -198,7 +198,7 @@ export const businesses = [
 
   { id: 6, name: "Dnyan Foundation", nameMarathi: "ज्ञान फाउंडेशन", nameHindi: "ज्ञान फाउंडेशन", category: "coaching", rating: 4.3, reviews: 670, address: "Shivaji Nagar, Amravati", phone: "098904 12365", hours: "9:00 AM - 6:30 PM", tags: ["MHT-CET", "NEET", "XI & XII Science Boards"], image: "📚", isOpen: true },
 
-  { id: 7, name: "OM Raut Sir Physics", nameMarathi: "ओम राऊत सर फिजिक्स", nameHindi: "ओम राउत सर फिजिक्स", category: "coaching", rating: 4.9, reviews: 1200, address: "Rajapeth, Amravati", phone: "097306 99887", hours: "7:00 AM - 7:00 PM", tags: ["Core Physics Coaching", "JEE & NEET Concepts"], image: "📚", isOpen: true },
+  { id: 7, name: "OM Raut Sir Physics", nameMarathi: "ओम राऊत सर फिजिक्स", nameHindi: "ओम राउत सर फिजिक्स", category: "coaching", rating: 4.9, reviews: 1110, address: "Rajapeth, Amravati", phone: "097306 99887", hours: "7:00 AM - 7:00 PM", tags: ["Core Physics Coaching", "JEE & NEET Concepts"], image: "📚", isOpen: true },
 
   { id: 8, name: "Rathi Career Forum Pvt Ltd", nameMarathi: "राठी करिअर फोरम", nameHindi: "राठी करियर फोरम", category: "coaching", rating: 4.4, reviews: 760, address: "Camp Area, Amravati", phone: "0721 2551122", hours: "8:00 AM - 8:00 PM", tags: ["Competitive Exam Prep", "Engineering & Medical Entrance"], image: "📚", isOpen: true },
 
@@ -232,7 +232,7 @@ export const businesses = [
 
   { id: 23, name: "RG Classes", nameMarathi: "आरजी क्लासेस", nameHindi: "आरजी क्लासेस", category: "coaching", rating: 4.8, reviews: 980, address: "Jaistambh Square, Amravati", phone: "0721 2574499", hours: "8:00 AM - 7:00 PM", tags: ["11th 12th Commerce", "CA Foundation", "Intermediate"], image: "📘", isOpen: true },
 
-  { id: 24, name: "BHANDE Sir's ACADEMY (BSA)", nameMarathi: "भांडे सर अकॅडमी", nameHindi: "भांडे सर अकादमी", category: "coaching", rating: 4.9, reviews: 1110, address: "Gadge Nagar, Amravati", phone: "095521 11223", hours: "7:00 AM - 8:00 PM", tags: ["Commerce Mastery", "Boards Preparation"], image: "📘", isOpen: true },
+  { id: 24, name: "BHANDE Sir's ACADEMY (BSA)", nameMarathi: "भांडे सर अकॅडमी", nameHindi: "भांडे सर अकादमी", category: "coaching", rating: 4.9, reviews: 1200, address: "Gadge Nagar, Amravati", phone: "095521 11223", hours: "7:00 AM - 8:00 PM", tags: ["Commerce Mastery", "Boards Preparation"], image: "📘", isOpen: true },
 
   { id: 25, name: "Agrawal Commerce Classes", nameMarathi: "अग्रवाल कॉमर्स क्लासेस", nameHindi: "अग्रवाल कॉमर्स क्लासेस", category: "coaching", rating: 4.5, reviews: 720, address: "Shrikrishna Peth, Amravati", phone: "099752 99887", hours: "8:00 AM - 7:30 PM", tags: ["CA Foundation", "CMA Aspirants", "Commerce"], image: "📘", isOpen: true },
 
@@ -247,7 +247,7 @@ export const businesses = [
   { id: 30, name: "Ideal Tutorials", nameMarathi: "आयडियल ट्युटोरियल्स", nameHindi: "आइडियल ट्यूटोरियल्स", category: "coaching", rating: 4.4, reviews: 620, address: "Prashant Nagar, Badnera Road, Amravati", phone: "Available at Academy", hours: "2:00 PM - 8:00 PM", tags: ["High School", "State Board"], image: "🏫", isOpen: true },
 
   // Hotels
-  { id: 201, name: "Enrise by Sayaji, Amravati", nameMarathi: "एनराईज बाय सयाजी", nameHindi: "एनराइज बाय सयाजी", category: "hotel", rating: 4.6, reviews: 1850, address: "Next to Best Price, National Highway 6, Amravati", phone: "0721 2970011", hours: "24 Hours Open", tags: ["Luxury Stay", "Fine Dining", "Banquet Halls"], image: "🏨", isOpen: true },
+  { id: 201, name: "Enrise by Sayaji, Amravati", nameMarathi: "एनराईज बाय सयाजी", nameHindi: "एनराइज बाय सयाजी", category: "hotel", rating: 4.6, reviews: 1700, address: "Next to Best Price, National Highway 6, Amravati", phone: "0721 2970011", hours: "24 Hours Open", tags: ["Luxury Stay", "Fine Dining", "Banquet Halls"], image: "🏨", isOpen: true },
 
   { id: 202, name: "The Prime Park", nameMarathi: "द प्राईम पार्क", nameHindi: "द प्राइम पार्क", category: "hotel", rating: 4.4, reviews: 1240, address: "Badnera Road, Near Inox, Amravati", phone: "0721 2662244", hours: "24 Hours Open", tags: ["Premium Rooms", "Multi-Cuisine", "Corporate Events"], image: "🏨", isOpen: true },
 
@@ -291,7 +291,7 @@ export const businesses = [
 
   { id: 222, name: "Hotel Neelam", nameMarathi: "हॉटेल नीलम", nameHindi: "होटल नीलम", category: "hotel", rating: 3.9, reviews: 580, address: "Vijay Colony Road, Amravati", phone: "0721 2673322", hours: "24 Hours Open", tags: ["Budget Stay", "Strategic Location", "Regular Rooms"], image: "🏨", isOpen: true },
 
-  { id: 223, name: "Hotel Grand Mehfil", nameMarathi: "हॉटेल ग्रँड मेहफिल", nameHindi: "होटल ग्रैंड मेहफिल", category: "hotel", rating: 4.6, reviews: 1700, address: "Camp Road, Near Collector Office, Amravati", phone: "0721 2662705", hours: "24 Hours Open", tags: ["4-Star Luxury", "Convention Center", "Bar"], image: "🏨", isOpen: true },
+  { id: 223, name: "Hotel Grand Mehfil", nameMarathi: "हॉटेल ग्रँड मेहफिल", nameHindi: "होटल ग्रैंड मेहफिल", category: "hotel", rating: 4.6, reviews: 1850, address: "Camp Road, Near Collector Office, Amravati", phone: "0721 2662705", hours: "24 Hours Open", tags: ["4-Star Luxury", "Convention Center", "Bar"], image: "🏨", isOpen: true },
 
   { id: 224, name: "Madhurai Resort", nameMarathi: "मधुराई रिसॉर्ट", nameHindi: "मधुराई रिज़ॉर्ट", category: "hotel", rating: 4.2, reviews: 820, address: "Kathora Road, Amravati", phone: "076663 55667", hours: "24 Hours Open", tags: ["Lawn Resort", "Outdoor Catering", "Destination Weddings"], image: "🏨", isOpen: true },
 
