@@ -1140,8 +1140,8 @@
 .map-3d-card {
   position: relative;
   width: 100%;
-  max-width: 900px;
-  height: 520px;
+  max-width: 1140px;
+  height: 560px;
   background: rgba(15, 23, 42, 0.03);
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 24px;
@@ -1364,23 +1364,75 @@
     padding: 40px 16px;
   }
   .map-3d-title {
-    font-size: 2rem;
+    font-size: 1.85rem;
   }
   .map-3d-card {
-    height: 380px;
+    height: 330px;
+    border-radius: 16px;
   }
-  .map-3d-overlay-ui {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
+  .map-3d-viewport {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    border-radius: 12px;
+  }
+  .map-3d-frame-top-left,
+  .map-3d-frame-top-right,
+  .map-3d-frame-bottom-left,
+  .map-3d-frame-bottom-right {
+    display: none; /* Hide sci-fi brackets on tablet/mobile to maximize active image viewport space */
   }
   .map-3d-controls {
-    flex-wrap: wrap;
-    justify-content: center;
-    border-radius: 16px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+    max-width: 320px;
     gap: 8px;
+    border-radius: 12px;
+    padding: 6px;
+  }
+  .map-control-btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .map-3d-section {
+    padding: 30px 12px;
+  }
+  .map-3d-badge {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+  .map-3d-title {
+    font-size: 1.55rem;
+  }
+  .map-3d-subtitle {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  .map-3d-card {
+    height: 250px;
+    border-radius: 12px;
+  }
+  .map-3d-viewport {
+    top: 6px;
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
+    border-radius: 8px;
+  }
+  .map-3d-controls {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 100%;
+    gap: 6px;
+    padding: 4px;
+  }
+  .map-control-btn {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    border-radius: 8px;
   }
 }

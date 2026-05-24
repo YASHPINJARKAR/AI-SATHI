@@ -404,11 +404,6 @@ export default function LandingPage({ darkMode, setDarkMode }) {
             <div className="map-3d-frame-bottom-left"></div>
             <div className="map-3d-frame-bottom-right"></div>
 
-            {/* Floating Markers / Sectors on top of the 3D surface */}
-            <div className="map-3d-overlay-ui">
-              <div className="map-hud-title">AMRAVATI SYS_MAP_v1.0</div>
-              <div className="map-hud-coordinate">LAT: 20.9320° N | LON: 77.7523° E</div>
-            </div>
           </div>
 
           {/* Interactive HUD Control Panel */}
