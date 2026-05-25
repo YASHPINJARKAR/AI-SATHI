@@ -10,7 +10,7 @@ import './Chat.css';
 // ── Gemini AI Setup ──────────────────────────────────────────────
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
-const GEMINI_MODEL = 'gemini-3.5-flash'; // High-performance model with active free tier quota
+const GEMINI_MODEL = 'gemini-3.5-flash'; // Confirmed working model for this API key
 
 const SYSTEM_PROMPT = `You are **Ai Sathi** (AI साथी), a smart, friendly, and helpful digital assistant built specifically for the citizens of **Amravati city, Maharashtra, India**, but capable of answering any question from the user.
 
