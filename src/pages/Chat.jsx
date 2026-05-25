@@ -251,7 +251,18 @@ export default function Chat() {
   const getAIResponse = async (query, base64Image = null) => {
     try {
       if (!chatRef.current) {
-        throw new Error('Gemini chat session not initialized');
+        if (!genAI) {
+          throw new Error('Gemini API key is missing! Set VITE_GEMINI_API_KEY in .env');
+        }
+        const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
+        const chat = model.startChat({
+          history: [
+            { role: 'user', parts: [{ text: 'System instructions: ' + SYSTEM_PROMPT }] },
+            { role: 'model', parts: [{ text: 'Understood! I am Ai Sathi, ready to help the citizens of Amravati and answer any question. How can I help you today? 😊' }] },
+          ],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
+        });
+        chatRef.current = chat;
       }
 
       const langHint = language === 'mr' 
