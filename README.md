@@ -48,6 +48,17 @@ The platform features a stunning **3D interactive robot** built with Spline (Web
 
 ---
 
+## ⚡ Recent Major Improvements
+
+To ensure peak performance and a seamless experience for Amravati citizens, several critical upgrades were successfully integrated:
+
+- **Upgraded AI Engine (Gemini 3.5 Flash)**: Upgraded both Text Chat (`Chat.jsx`) and Voice Assistant (`VoiceAssistant.jsx`) to run on **Gemini 3.5 Flash**, offering ultra-low latency responses, robust handling, and a highly reliable active tier.
+- **Dynamic Speech Synthesis Fallback**: Added a smart phonetic speech fallback to Hindi (`hi-IN`) voices (sharing the Devanagari script) when a native Marathi voice is missing in the user's browser/OS, enabling voice reading for Marathi text across all devices.
+- **Chat Connection Auto-Recovery**: Engineered an auto-reinitialization system in `Chat.jsx` and `VoiceAssistant.jsx` to dynamically re-establish the Gemini session if it disconnects, preventing "Disconnected" errors.
+- **Talk to AI Quick-Access**: Connected the primary landing page CTA "Talk to AI" button directly to the `VoiceAssistant` overlay modal, offering users immediate voice-first smart assistant access.
+
+---
+
 ## ✨ Features
 
 ### 🧠 AI-Powered Chat
@@ -224,21 +235,19 @@ Canvas-based animated particle system that:
 
 ## 🤖 AI Integration
 
-Ai Sathi uses **Google Gemini AI** as its primary AI model for the chat interface.
+Ai Sathi uses the cutting-edge **Google Gemini AI** (`gemini-3.5-flash`) as its primary AI model for the chat and voice assistant interfaces.
 
 ### How it works
-1. User sends a message (text or voice)
-2. The app constructs a prompt with city context (Amravati knowledge base)
-3. Gemini API returns a natural language response
-4. Response is displayed and optionally read aloud via text-to-speech
-5. OpenRouter SDK is available as a fallback AI provider
+1. **User Input**: User sends a message via text or speaks to the voice assistant.
+2. **Context Enrichment**: The app constructs a structured system prompt embedding local knowledge about Amravati city (history, local bodies, hospitals, navigation landmarks).
+3. **Model Processing**: The request is securely dispatched to the Gemini 3.5 Flash API.
+4. **Auto-Recovery**: If a session has gone stale or timed out, the application dynamically re-initializes the generative chat instance on-the-fly, ensuring uninterrupted service.
+5. **Speech Synthesis**: The response text is parsed and spoken aloud. If Marathi language is selected and no native Marathi voice is present on the client system, it dynamically falls back to a Hindi voice to render Devanagari text correctly.
 
 ### AI Capabilities
-- Answers questions about Amravati city geography, history, culture
-- Provides directions to local businesses and landmarks
-- Explains government schemes in simple language
-- Responds fluently in Marathi, Hindi, and English
-- Understands mixed-language (Hinglish/Marathish) queries
+- **City Directory Mapping**: Provides real-time guides to local businesses, schools, and hospitals.
+- **Scheme Assistance**: Translates government schemes and eligibility requirements into simplified, citizen-friendly language.
+- **Fluency**: Translates and answers flawlessly in Devanagari Marathi, Hindi, and English.
 
 ---
 
@@ -345,10 +354,8 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 Create a `.env` file in the root directory with the following variables:
 
 ```env
-# Google Gemini AI API Key
-VITE_GEMINI_API_KEY=AIzaSyBpHmcD0P__KIONd_-sjr9eQ8mMDG0bYW0
-
-
+# Google Gemini AI API Key (must be an active key with Gemini 3.5 access)
+VITE_GEMINI_API_KEY=AIzaSyBfR4wyGRp4lKFuJa81pw1ddaCFVu5c6Wg
 ```
 
 > ⚠️ **Never commit your `.env` file to version control.** It is already listed in `.gitignore`.
