@@ -99,8 +99,15 @@ export default function VoiceAssistant({ isOpen, onClose, initialLanguage }) {
     );
     if (langMatch) return langMatch;
 
-    // Do NOT fall back to Hindi for Marathi or any other language —
-    // returning null lets the browser use utterance.lang correctly.
+    // 3. Fallback for Marathi: Hindi is extremely close, uses Devanagari script,
+    // and is widely supported on Windows, Chrome, iOS, and Android.
+    if (searchLang === 'mr') {
+      const hindiMatch = voices.find(v =>
+        v.lang.toLowerCase().startsWith('hi')
+      );
+      if (hindiMatch) return hindiMatch;
+    }
+
     return null;
   }, []);
 
@@ -110,32 +117,43 @@ export default function VoiceAssistant({ isOpen, onClose, initialLanguage }) {
     window.speechSynthesis.cancel();
     const cleanText = text.replace(/[*_#\[\]]/g, '').replace(/\n/g, '. ').substring(0, 500);
     const utt = new SpeechSynthesisUtterance(cleanText);
-    utt.lang = langCode;
-    utt.rate = langCode !== 'en-IN' ? 0.88 : 0.95;
-    utt.pitch = 1.05;
 
-    // Retry voice loading if empty (Chrome async load)
-    const trySetVoice = () => {
+    const applyVoiceAndLang = () => {
       const voice = getBestVoice(langCode);
-      if (voice) utt.voice = voice;
+      if (voice) {
+        utt.voice = voice;
+        utt.lang = voice.lang;
+      } else {
+        // If absolutely no voice matches, fallback to hi-IN for Marathi, else use original langCode
+        utt.lang = langCode === 'mr-IN' ? 'hi-IN' : langCode;
+      }
+      utt.rate = utt.lang.startsWith('en') ? 0.95 : 0.88;
     };
 
     if (voicesRef.current.length === 0) {
       window.speechSynthesis.onvoiceschanged = () => {
-        voicesRef.current = window.speechSynthesis.getVoices();
-        trySetVoice();
+        voicesRef.current = window.speechSynthesis.getVoices() || [];
+        applyVoiceAndLang();
       };
     } else {
-      trySetVoice();
+      applyVoiceAndLang();
     }
 
+    utt.pitch = 1.05;
     utt.onstart = () => setStatus('speaking');
     utt.onend = () => setStatus('idle');
-    utt.onerror = () => setStatus('idle');
+    utt.onerror = (e) => {
+      console.error('SpeechSynthesis error:', e);
+      setStatus('idle');
+    };
 
     utteranceRef.current = utt;
     // Chrome bug workaround: delay slightly
-    setTimeout(() => window.speechSynthesis.speak(utt), 100);
+    setTimeout(() => {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.speak(utt);
+      }
+    }, 100);
   }, [isMuted, getBestVoice]);
 
   const askAI = useCallback(async (text, langCode) => {
