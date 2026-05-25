@@ -68,7 +68,7 @@ export default function VoiceAssistant({ isOpen, onClose, initialLanguage }) {
   useEffect(() => {
     if (!genAI) return;
     try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       chatRef.current = model.startChat({
         history: [
           { role: 'user', parts: [{ text: 'System: ' + SYSTEM_PROMPT }] },
@@ -147,7 +147,7 @@ export default function VoiceAssistant({ isOpen, onClose, initialLanguage }) {
       // Auto-reinit if chat session was lost
       if (!chatRef.current) {
         if (!genAI) throw new Error('Gemini not initialized');
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         chatRef.current = model.startChat({
           history: [
             { role: 'user', parts: [{ text: 'System: ' + SYSTEM_PROMPT }] },
