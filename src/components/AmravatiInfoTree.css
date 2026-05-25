@@ -309,6 +309,20 @@
   font-family: var(--font-primary);
 }
 
+/* Dark mode overrides for demography page text visibility */
+[data-theme="dark"] .demography-panel .panel-title {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .demo-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="dark"] .demo-value {
+  color: #ffffff;
+}
+
+
 /* Helpline Grid */
 .helpline-grid {
   display: grid;
