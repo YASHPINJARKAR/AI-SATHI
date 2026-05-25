@@ -4,6 +4,7 @@ import { ArrowRight, Mic, MapPin, Sparkles, MessageSquare, Sun, Moon, Globe } fr
 import './LandingPage.css';
 import { useLanguage } from '../LanguageContext';
 import SplineScene from '../components/SplineScene';
+import VoiceAssistant from '../components/VoiceAssistant';
 
 // ─── Public Spline scene: AI robot / smart-city orb ──────────────────────────
 // Replace this URL with your own Spline scene link anytime
@@ -146,6 +147,17 @@ export default function LandingPage({ darkMode, setDarkMode }) {
   const { language, changeLanguage } = useLanguage();
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [activeUtility, setActiveUtility] = useState(null);
+  const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+
+  const handleOpenVoice = () => {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance('');
+      u.volume = 0;
+      window.speechSynthesis.speak(u);
+    }
+    setIsVoiceOpen(true);
+  };
 
   // ─── 3D Map Interactive States & Handlers ───
   const [zoom, setZoom] = useState(1);
@@ -275,9 +287,9 @@ export default function LandingPage({ darkMode, setDarkMode }) {
             <Link to="/dashboard" className="landing-btn primary">
               {language === 'mr' ? 'सुरुवात करा' : language === 'hi' ? 'शुरू करें' : 'Get Started'} <ArrowRight size={18} />
             </Link>
-            <Link to="/chat" className="landing-btn secondary">
+            <button onClick={handleOpenVoice} className="landing-btn secondary" style={{ cursor: 'pointer' }}>
               {language === 'mr' ? 'AI शी बोला' : language === 'hi' ? 'एआई से बात करें' : 'Talk to AI'}
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -589,6 +601,13 @@ export default function LandingPage({ darkMode, setDarkMode }) {
 
       {/* Background Elements */}
       <div className="landing-bg-grid"></div>
+
+      {/* Voice Assistant Overlay */}
+      <VoiceAssistant
+        isOpen={isVoiceOpen}
+        onClose={() => setIsVoiceOpen(false)}
+        initialLanguage={language}
+      />
     </div>
   );
 }
