@@ -4,6 +4,7 @@ import L from 'leaflet';
 import { Search, Navigation, Star, MapPin, Phone, Clock, Layers } from 'lucide-react';
 import { businesses, categories } from '../data/mockData';
 import { useLanguage } from '../LanguageContext';
+import { useLocation } from 'react-router-dom';
 import './MapPage.css';
 
 // Fix for default marker icons in react-leaflet
@@ -57,10 +58,24 @@ const destIcon = new L.Icon({
 
 export default function MapPage() {
   const { language } = useLanguage();
+  const location = useLocation();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBiz, setSelectedBiz] = useState(null);
   const [flyTo, setFlyTo] = useState(null);
+
+  // Parse category and search parameters from URL on mount/change
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const searchParam = params.get('search');
+    const categoryParam = params.get('category');
+    if (searchParam) {
+      setSearchQuery(searchParam);
+    }
+    if (categoryParam) {
+      setActiveCategory(categoryParam);
+    }
+  }, [location.search]);
   
   // New State for Live Location, Global Search, and Routing
   const [userLocation, setUserLocation] = useState(null);
@@ -206,39 +221,103 @@ export default function MapPage() {
       );
       return;
     }
-    try {
-      const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${userLocation[1]},${userLocation[0]};${biz.lng},${biz.lat}?overview=full&geometries=geojson`);
-      const data = await res.json();
-      if (data.routes && data.routes[0]) {
-        const coords = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
-        setRouteCoords(coords);
-        setSelectedBiz(biz);
-      } else {
-        alert(
-          language === 'mr' 
-            ? "मार्ग सापडला नाही." 
-            : language === 'hi' 
-            ? "मार्ग नहीं मिला।" 
-            : "Route not found."
-        );
+
+    let destLat = biz.lat;
+    let destLng = biz.lng;
+
+    // 1. Geocoding Fallback: If destination has no lat/lng (e.g. mock businesses)
+    if (!destLat || !destLng || isNaN(destLat) || isNaN(destLng)) {
+      try {
+        const query = `${biz.name}, ${biz.address}`;
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data && data[0]) {
+          destLat = parseFloat(data[0].lat);
+          destLng = parseFloat(data[0].lon);
+          // Cache it on the object
+          biz.lat = destLat;
+          biz.lng = destLng;
+        } else {
+          // Fallback to name + Amravati
+          const fallbackUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(biz.name + ' Amravati')}&format=json&limit=1`;
+          const fallbackRes = await fetch(fallbackUrl);
+          const fallbackData = await fallbackRes.json();
+          if (fallbackData && fallbackData[0]) {
+            destLat = parseFloat(fallbackData[0].lat);
+            destLng = parseFloat(fallbackData[0].lon);
+            biz.lat = destLat;
+            biz.lng = destLng;
+          }
+        }
+      } catch (err) {
+        console.error("Geocoding failed for routing:", err);
       }
-    } catch(e) {
-      console.error("Routing error", e);
+    }
+
+    if (!destLat || !destLng || isNaN(destLat) || isNaN(destLng)) {
       alert(
         language === 'mr' 
-          ? "मार्ग शोधताना त्रुटी आली." 
+          ? "या ठिकाणाचे स्थान शोधता आले नाही." 
           : language === 'hi' 
-          ? "मार्ग खोजने में त्रुटि हुई।" 
-          : "Error calculating route."
+          ? "इस स्थान का स्थान नहीं मिला।" 
+          : "Could not find coordinates for this destination."
+      );
+      return;
+    }
+
+    // 2. Fetch routing using OpenStreetMap Germany router (faster & more reliable)
+    // with a fallback to the main OSRM demo router.
+    const routers = [
+      `https://routing.openstreetmap.de/routed-car/route/v1/driving/${userLocation[1]},${userLocation[0]};${destLng},${destLat}?overview=full&geometries=geojson`,
+      `https://router.project-osrm.org/route/v1/driving/${userLocation[1]},${userLocation[0]};${destLng},${destLat}?overview=full&geometries=geojson`
+    ];
+
+    let routeFetched = false;
+    for (const url of routers) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+        const data = await res.json();
+        if (data.routes && data.routes[0]) {
+          const coords = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+          setRouteCoords(coords);
+          setSelectedBiz({ ...biz, lat: destLat, lng: destLng });
+          routeFetched = true;
+          break;
+        }
+      } catch (e) {
+        console.warn(`Routing failed on ${url}:`, e);
+      }
+    }
+
+    // 3. Straight Line Fallback (if both routers fail or return no route)
+    if (!routeFetched) {
+      console.log("OSRM/OSM routing failed. Drawing straight line fallback.");
+      const straightLine = [[userLocation[0], userLocation[1]], [destLat, destLng]];
+      setRouteCoords(straightLine);
+      setSelectedBiz({ ...biz, lat: destLat, lng: destLng });
+      alert(
+        language === 'mr'
+          ? "नकाशावर थेट दिशा दाखवली आहे (रस्ता मार्ग उपलब्ध नाही)."
+          : language === 'hi'
+          ? "नक्शे पर सीधी दिशा दिखाई गई है (सड़क मार्ग उपलब्ध नहीं है)।"
+          : "Showing direct line on map (road routing temporarily unavailable)."
       );
     }
   };
 
   const openDirections = (biz) => {
-    const originParams = userLocation ? `&origin=${userLocation[0]},${userLocation[1]}` : '';
-    const url = `https://www.google.com/maps/dir/?api=1${originParams}&destination=${biz.lat},${biz.lng}`;
+    // If biz has coordinates, use them; otherwise search by name/address in Google Maps
+    const dest = (biz.lat && biz.lng)
+      ? `${biz.lat},${biz.lng}`
+      : `${biz.name}, ${biz.address}`;
+    
+    // Omit origin to let Google Maps automatically use the user's real live device GPS location
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}`;
     window.open(url, '_blank');
   };
+
 
   return (
     <div className="page-container map-page">

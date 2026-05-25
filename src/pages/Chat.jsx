@@ -317,7 +317,51 @@ export default function Chat() {
 
       const responseText = await getAIResponse(messageText, currentImage);
 
-      const botMsg = { id: Date.now() + 1, type: 'bot', text: responseText, timestamp: new Date() };
+      // Check if we should redirect to map for hospitals, ATMs, or restaurants
+      let redirectUrl = null;
+      let actionLabel = '';
+      const queryLower = messageText.toLowerCase();
+
+      // Check intent to locate or if it's a direct category request
+      const isLocationIntent = /near|nearest|find|show|where|map|direction|route|location|address|जवळ|जवळचे|कुठे|नकाशा|दिशा|मार्ग|शोधा|निकटतम|पास/i.test(queryLower) ||
+                              /^(hospital|atm|restaurant|हॉस्पिटल|रुग्णालय|अस्पताल|एटीएम|रेस्टॉरंट|रेस्तरां)$/i.test(queryLower.trim());
+
+      if (isLocationIntent) {
+        if (/hospital|clinic|doctor|हॉस्पिटल|रुग्णालय|अस्पताल/i.test(queryLower)) {
+          redirectUrl = '/map?category=hospital';
+          actionLabel = language === 'mr' ? '🏥 हॉस्पिटलचे मार्ग दाखवा' : language === 'hi' ? '🏥 अस्पताल के मार्ग दिखाएं' : '🏥 Get Directions to Hospitals';
+        } else if (/atm|cash|एटीएम|मशीन/i.test(queryLower)) {
+          redirectUrl = '/map?category=atm';
+          actionLabel = language === 'mr' ? '🏧 ATM चे मार्ग दाखवा' : language === 'hi' ? '🏧 एटीएम के मार्ग दिखाएं' : '🏧 Get Directions to ATMs';
+        } else if (/restaurant|food|dhaba|cafe|हॉटेल|रेस्टॉरंट|रेस्तरां|भोजन|खाना/i.test(queryLower)) {
+          redirectUrl = '/map?category=restaurant';
+          actionLabel = language === 'mr' ? '🍽️ RESTAURANT चे मार्ग दाखवा' : language === 'hi' ? '🍽️ रेस्तरां के मार्ग दिखाएं' : '🍽️ Get Directions to Restaurants';
+        }
+      }
+
+      // Generic search redirection if they explicitly mention "map" or "directions" or "route"
+      if (!redirectUrl && /map|route|direction|नकाशा|मार्ग|दिशा/i.test(queryLower)) {
+        const cleanQuery = messageText
+          .replace(/show|find|nearest|near|me|on|map|directions|to|route|for|जवळचे|नकाशा|दाखवा|मार्ग|दिशा/gi, '')
+          .trim();
+        if (cleanQuery.length > 2) {
+          redirectUrl = `/map?search=${encodeURIComponent(cleanQuery)}`;
+          actionLabel = language === 'mr' ? `🧭 "${cleanQuery}" चे मार्ग दाखवा` : language === 'hi' ? `🧭 "${cleanQuery}" के मार्ग दिखाएं` : `🧭 Get Directions to "${cleanQuery}"`;
+        }
+      }
+
+      const botMsg = { 
+        id: Date.now() + 1, 
+        type: 'bot', 
+        text: responseText, 
+        timestamp: new Date(),
+        action: redirectUrl ? {
+          type: 'map_redirect',
+          label: actionLabel,
+          url: redirectUrl
+        } : null
+      };
+
       setMessages(prev => [...prev, botMsg]);
       setIsTyping(false);
 
@@ -326,7 +370,7 @@ export default function Chat() {
       }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [input, selectedImage, isTyping, isVoiceMode, speakText, requireAuth]);
+  }, [input, selectedImage, isTyping, isVoiceMode, speakText, requireAuth, language, navigate]);
 
   // Keep a ref so toggleVoice always has the freshest handleSend
   useEffect(() => {
@@ -647,6 +691,30 @@ export default function Chat() {
               )}
               <div className="message-bubble">
                 {formatMessage(msg.text)}
+                {msg.action && msg.action.type === 'map_redirect' && (
+                  <button
+                    className="msg-action-btn btn btn-accent btn-sm"
+                    onClick={() => navigate(msg.action.url)}
+                    style={{
+                      marginTop: '12px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 16px',
+                      borderRadius: '20px',
+                      fontWeight: '600',
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      border: 'none',
+                      background: 'var(--gradient-accent)',
+                      color: 'white',
+                      boxShadow: 'var(--shadow-sm)',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {msg.action.label}
+                  </button>
+                )}
               </div>
               <div className="message-meta-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
                 <span className="message-time">

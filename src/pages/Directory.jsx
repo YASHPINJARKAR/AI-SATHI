@@ -40,9 +40,13 @@ export default function Directory() {
   }, [searchQuery, activeCategory, sortBy]);
 
   const openDirections = (business) => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${business.lat},${business.lng}`;
+    const dest = (business.lat && business.lng)
+      ? `${business.lat},${business.lng}`
+      : `${business.name}, ${business.address}`;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}`;
     window.open(url, '_blank');
   };
+
 
   const handleCall = (phone) => {
     requireAuth(() => {
