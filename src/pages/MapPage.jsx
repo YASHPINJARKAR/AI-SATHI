@@ -319,6 +319,40 @@ export default function MapPage() {
   };
 
 
+  // Automatically select and route to the nearest item if redirecting from Chat with category/search parameters
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const hasCategory = params.get('category');
+    const hasSearch = params.get('search');
+
+    if ((hasCategory || hasSearch) && userLocation && filtered.length > 0 && !selectedBiz && !routeCoords) {
+      let nearestBiz = null;
+      let minDistance = Infinity;
+
+      const candidates = filtered.filter(b => b.lat && b.lng && !isNaN(b.lat) && !isNaN(b.lng));
+
+      if (candidates.length > 0) {
+        candidates.forEach(biz => {
+          const dist = Math.pow(biz.lat - userLocation[0], 2) + Math.pow(biz.lng - userLocation[1], 2);
+          if (dist < minDistance) {
+            minDistance = dist;
+            nearestBiz = biz;
+          }
+        });
+      } else if (filtered.length > 0) {
+        nearestBiz = filtered[0];
+      }
+
+      if (nearestBiz) {
+        console.log("Auto-selecting nearest business for routing:", nearestBiz);
+        handleBizClick(nearestBiz);
+        setTimeout(() => {
+          calculateRoute(nearestBiz);
+        }, 800);
+      }
+    }
+  }, [location.search, userLocation, filtered, selectedBiz, routeCoords]);
+
   return (
     <div className="page-container map-page">
       <div className="map-layout">
