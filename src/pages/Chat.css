@@ -544,3 +544,29 @@
   object-fit: cover;
   border: 2px solid rgba(255, 255, 255, 0.1);
 }
+
+/* Chat Markdown Link Styling */
+.message-bubble a.chat-link {
+  color: var(--accent);
+  text-decoration: underline;
+  font-weight: 600;
+  transition: opacity 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.message-bubble a.chat-link:hover {
+  opacity: 0.85;
+  color: var(--accent-hover, #ff8c00);
+}
+
+.message.user .message-bubble a.chat-link {
+  color: #ffffff;
+  text-decoration: underline;
+  opacity: 0.95;
+}
+
+.message.user .message-bubble a.chat-link:hover {
+  opacity: 1;
+}

@@ -8,9 +8,10 @@ import { useAuth } from '../context/AuthContext';
 import './Chat.css';
 
 // ── Gemini AI Setup ──────────────────────────────────────────────
-const GEMINI_API_KEY = "AIzaSyAc1qnt4Jl7SuZiKzMsbWz1lsyEs6gbFDc";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDEGJ2_nRGbv0hPIZKPGMGlCa-UzqMg5f4";
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
-const GEMINI_MODEL = 'gemini-3.5-flash'; // Confirmed working model for this API key
+const GEMINI_MODEL = 'gemini-2.5-flash'; // Stable free-tier model supporting generateContent
+
 
 const SYSTEM_PROMPT = `You are **Ai Sathi** (AI साथी), a smart, friendly, and helpful digital assistant built specifically for the citizens of **Amravati city, Maharashtra, India**, but capable of answering any question from the user.
 
@@ -78,12 +79,18 @@ You have deep knowledge about Amravati including:
 - Hotel Gouri Inn — Rajapeth Square, Affordable
 
 ## Response Guidelines
-1. When asked about a place/service, provide: Name, Address, Phone, Timings, Rating if available
-2. For government schemes, include: Eligibility, Documents needed, Where to apply, Timeline
-3. For emergencies, respond with urgency and provide direct contact numbers
-4. Answer ANY question the user asks, whether it's general knowledge, programming, math, advice, or anything else. Use your general knowledge capabilities.
-5. Keep responses well-structured with bullet points and bold text for readability
-6. Always be helpful and suggest related follow-up questions`;
+1. When asked about a place/service/hospital/ATM, provide: Name, Address, Phone, Timings, Rating if available.
+2. For hospitals, ATMs, restaurants, and other physical places, you MUST dynamically generate:
+   - A Google Maps directions link in this format: [Directions](https://www.google.com/maps/dir/?api=1&destination=PLACE_NAME_Amravati) (where PLACE_NAME is the name of the place, URL-encoded or spaces replaced by '+', e.g. [Directions](https://www.google.com/maps/dir/?api=1&destination=Shree+Krishna+Hospital+Amravati))
+   - A Photos link using Google Image Search in this format: [Photos](https://www.google.com/search?tbm=isch&q=PLACE_NAME_Amravati) (e.g. [Photos](https://www.google.com/search?tbm=isch&q=Shree+Krishna+Hospital+Amravati))
+   - A Call link if a phone number is available in this format: [Call: PHONE_NUMBER](tel:PHONE_NUMBER) (e.g. [Call: 07212552353](tel:07212552353))
+3. CRITICAL: Never refuse to answer or give generic fallback answers for places/ATMs/hospitals not explicitly listed in your knowledge base. Instead, use your general knowledge to suggest suitable places/options in Amravati and dynamically construct their Directions and Photos links based on their names.
+4. For government schemes, include: Eligibility, Documents needed, Where to apply, Timeline
+5. For emergencies, respond with urgency and provide direct contact numbers
+6. Answer ANY question the user asks, whether it's general knowledge, programming, math, advice, or anything else. Use your general knowledge capabilities.
+7. Keep responses well-structured with bullet points and bold text for readability
+8. Always be helpful and suggest related follow-up questions`;
+
 
 export default function Chat() {
   const { language } = useLanguage();
@@ -92,7 +99,7 @@ export default function Chat() {
   const location = useLocation();
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
-  
+
   const getWelcomeText = useCallback(() => {
     if (language === 'mr') {
       return 'नमस्कार! मी **Ai Sathi** 🤖, तुमचा अमरावती डिजिटल सहाय्यक.\n\nमी तुम्हाला खालील गोष्टींमध्ये मदत करू शकतो:\n- 🏥 हॉस्पिटल व आरोग्य सेवा\n- 🍽️ रेस्टॉरंट व खाद्यपदार्थ\n- 🏛️ सरकारी योजना व सेवा\n- 📚 शिक्षण व कोचिंग\n- 📍 दिशा व ठिकाणे\n\nकाहीही विचारा!';
@@ -265,25 +272,25 @@ export default function Chat() {
         chatRef.current = chat;
       }
 
-      const langHint = language === 'mr' 
-        ? ' (CRITICAL: You MUST respond entirely in Marathi language using Devanagari script. Do not use English words.)' 
+      const langHint = language === 'mr'
+        ? ' (CRITICAL: You MUST respond entirely in Marathi language using Devanagari script. Do not use English words.)'
         : language === 'hi'
-        ? ' (CRITICAL: You MUST respond entirely in Hindi language using Devanagari script. Do not use English words.)'
-        : ' (Please respond entirely in English.)';
+          ? ' (CRITICAL: You MUST respond entirely in Hindi language using Devanagari script. Do not use English words.)'
+          : ' (Please respond entirely in English.)';
       const fullQuery = query + langHint;
-      
+
       let result;
       if (base64Image) {
         const base64Data = base64Image.split(',')[1];
         const mimeType = base64Image.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)[1];
-        
+
         const imagePart = {
           inlineData: {
             data: base64Data,
             mimeType: mimeType
           }
         };
-        
+
         const parts = [fullQuery || "What is in this image?", imagePart];
         result = await chatRef.current.sendMessage(parts);
       } else {
@@ -301,8 +308,8 @@ export default function Chat() {
       return language === 'mr'
         ? '⚠️ माफ करा, AI सेवेशी जोडणी करताना अडचण आली. कृपया पुन्हा प्रयत्न करा.'
         : language === 'hi'
-        ? '⚠️ क्षमा करें, एआई सेवा से जुड़ने में समस्या हुई। कृपया पुनः प्रयास करें।'
-        : '⚠️ Sorry, I had trouble connecting to the AI service. Please try again.';
+          ? '⚠️ क्षमा करें, एआई सेवा से जुड़ने में समस्या हुई। कृपया पुनः प्रयास करें।'
+          : '⚠️ Sorry, I had trouble connecting to the AI service. Please try again.';
     }
   };
 
@@ -336,7 +343,7 @@ export default function Chat() {
         speakText(responseText);
       }
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input, selectedImage, isTyping, isVoiceMode, speakText, requireAuth]);
 
   // Keep a ref so toggleVoice always has the freshest handleSend
@@ -358,8 +365,8 @@ export default function Chat() {
       alert(language === 'mr'
         ? 'हा ब्राउझर व्हॉइस रिकग्निशन सपोर्ट करत नाही. कृपया Chrome वापरा.'
         : language === 'hi'
-        ? 'यह ब्राउज़र वॉयस रिकग्निशन का समर्थन नहीं करता है। कृपया Chrome का उपयोग करें।'
-        : 'Voice recognition is not supported in this browser. Please use Chrome.');
+          ? 'यह ब्राउज़र वॉयस रिकग्निशन का समर्थन नहीं करता है। कृपया Chrome का उपयोग करें।'
+          : 'Voice recognition is not supported in this browser. Please use Chrome.');
       return;
     }
 
@@ -397,14 +404,14 @@ export default function Chat() {
         alert(language === 'mr'
           ? 'मायक्रोफोनला परवानगी नाकारली आहे. असुरक्षित कनेक्शन (HTTP) मुळे ब्राउझर माइक ब्लॉक करतो. कृपया localhost किंवा HTTPS वापरा.'
           : language === 'hi'
-          ? 'माइक्रोफ़ोन एक्सेस अस्वीकृत। असुरक्षित कनेक्शन (HTTP) के कारण ब्राउज़र माइक ब्लॉक करता है। कृपया localhost या HTTPS का उपयोग करें।'
-          : 'Microphone access denied. Browser blocks mic on unsecure HTTP connections. Please use localhost or HTTPS.');
+            ? 'माइक्रोफ़ोन एक्सेस अस्वीकृत। असुरक्षित कनेक्शन (HTTP) के कारण ब्राउज़र माइक ब्लॉक करता है। कृपया localhost या HTTPS का उपयोग करें।'
+            : 'Microphone access denied. Browser blocks mic on unsecure HTTP connections. Please use localhost or HTTPS.');
       } else {
         alert(language === 'mr'
           ? 'मायक्रोफोनला परवानगी नाकारली आहे. कृपया ब्राउझर URL बारमधील लॉक चिन्हावर क्लिक करून परवानगी द्या.'
           : language === 'hi'
-          ? 'माइक्रोफ़ोन एक्सेस अस्वीकृत। कृपया ब्राउज़र URL बार में लॉक आइकन पर क्लिक करके अनुमति दें।'
-          : 'Microphone access denied. Please click the lock icon in the browser URL bar to allow access.');
+            ? 'माइक्रोफ़ोन एक्सेस अस्वीकृत। कृपया ब्राउज़र URL बार में लॉक आइकन पर क्लिक करके अनुमति दें।'
+            : 'Microphone access denied. Please click the lock icon in the browser URL bar to allow access.');
       }
       return;
     }
@@ -414,11 +421,11 @@ export default function Chat() {
     recognition.lang = language === 'mr' ? 'mr-IN' : language === 'hi' ? 'hi-IN' : 'en-IN';
     recognition.continuous = false;
     recognition.interimResults = false;
-    
+
     recognitionRef.current = recognition;
     setIsListening(true);
     setIsVoiceMode(true); // Auto-enable voice response when user speaks
-    
+
     recognition.onresult = (event) => {
       if (recognitionRef.current) {
         try {
@@ -436,7 +443,7 @@ export default function Chat() {
         handleSendRef.current(transcript);
       }, 300);
     };
-    
+
     recognition.onerror = (e) => {
       recognitionRef.current = null;
       setIsListening(false);
@@ -445,16 +452,16 @@ export default function Chat() {
         alert(language === 'mr'
           ? 'मायक्रोफोनला परवानगी नाकारली आहे. कृपया ब्राउझर URL बारमधील लॉक चिन्हावर क्लिक करून परवानगी द्या.'
           : language === 'hi'
-          ? 'माइक्रोफ़ोन एक्सेस अस्वीकृत। कृपया ब्राउज़र URL बार में लॉक आइकन पर क्लिक करके अनुमति दें।'
-          : 'Microphone access denied. Please click the lock icon in the browser URL bar to allow access.');
+            ? 'माइक्रोफ़ोन एक्सेस अस्वीकृत। कृपया ब्राउज़र URL बार में लॉक आइकन पर क्लिक करके अनुमति दें।'
+            : 'Microphone access denied. Please click the lock icon in the browser URL bar to allow access.');
       }
     };
-    
+
     recognition.onend = () => {
       recognitionRef.current = null;
       setIsListening(false);
     };
-    
+
     try {
       recognition.start();
     } catch (err) {
@@ -471,10 +478,10 @@ export default function Chat() {
       const timer = setTimeout(() => {
         toggleVoice();
       }, 300);
-      
+
       // Clean up the URL query parameter
       navigate('/chat', { replace: true });
-      
+
       return () => clearTimeout(timer);
     }
   }, [location.search, navigate, toggleVoice]);
@@ -488,8 +495,8 @@ export default function Chat() {
         text: language === 'mr'
           ? '🔄 चॅट रीसेट झाला! मी तुम्हाला कशी मदत करू शकतो?'
           : language === 'hi'
-          ? '🔄 चैट रीसेट हो गया! मैं आपकी क्या मदद कर सकता हूँ?'
-          : '🔄 Chat reset! How can I help you?',
+            ? '🔄 चैट रीसेट हो गया! मैं आपकी क्या मदद कर सकता हूँ?'
+            : '🔄 Chat reset! How can I help you?',
         timestamp: new Date()
       }
     ]);
@@ -552,11 +559,13 @@ export default function Chat() {
 
   const formatInline = (text) => {
     return text
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/`(.*?)`/g, '<code>$1</code>')
       .replace(/•/g, '&bull;');
   };
+
 
   return (
     <div className="page-container chat-page">
@@ -564,9 +573,9 @@ export default function Chat() {
       <div className="chat-header animate-fade-in-down">
         <div className="chat-header-left">
           {user && user.role === 'admin' && (
-            <button 
-              className="btn btn-ghost admin-chat-back-btn" 
-              onClick={() => navigate('/profile')} 
+            <button
+              className="btn btn-ghost admin-chat-back-btn"
+              onClick={() => navigate('/profile')}
               style={{ marginRight: '16px', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', background: 'transparent', color: 'var(--text-primary)', fontWeight: '600', transition: 'all 0.2s ease' }}
             >
               ⬅️ {language === 'mr' ? 'प्रशासक पोर्टल' : language === 'hi' ? 'एडमिन पोर्टल' : 'Admin Portal'}
@@ -732,10 +741,10 @@ export default function Chat() {
           >
             <Image size={20} />
           </button>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            style={{ display: 'none' }} 
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
             accept="image/*"
             onChange={handleImageSelect}
           />

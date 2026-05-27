@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useLanguage } from '../LanguageContext';
 import './VoiceAssistant.css';
 
-const GEMINI_API_KEY = "AIzaSyAc1qnt4Jl7SuZiKzMsbWz1lsyEs6gbFDc";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 const SYSTEM_PROMPT = `You are Ai Sathi (AI साथी), a friendly voice assistant for Amravati city citizens. Keep answers SHORT and conversational (2-3 sentences max). Answer in the same language as the user speaks — Marathi or English. For Marathi use Devanagari script. Be warm and helpful.`;
@@ -68,7 +68,7 @@ export default function VoiceAssistant({ isOpen, onClose, initialLanguage }) {
   useEffect(() => {
     if (!genAI) return;
     try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
       chatRef.current = model.startChat({
         history: [
           { role: 'user', parts: [{ text: 'System: ' + SYSTEM_PROMPT }] },
@@ -165,7 +165,7 @@ export default function VoiceAssistant({ isOpen, onClose, initialLanguage }) {
       // Auto-reinit if chat session was lost
       if (!chatRef.current) {
         if (!genAI) throw new Error('Gemini not initialized');
-        const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
         chatRef.current = model.startChat({
           history: [
             { role: 'user', parts: [{ text: 'System: ' + SYSTEM_PROMPT }] },
