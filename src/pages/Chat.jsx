@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import './Chat.css';
 
 // ── Gemini AI Setup ──────────────────────────────────────────────
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDEGJ2_nRGbv0hPIZKPGMGlCa-UzqMg5f4";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyBfR4wyGRp4lKFuJa81pw1ddaCFVu5c6Wg";
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 const GEMINI_MODEL = 'gemini-2.5-flash'; // Stable free-tier model supporting generateContent
 

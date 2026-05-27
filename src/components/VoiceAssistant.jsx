@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useLanguage } from '../LanguageContext';
 import './VoiceAssistant.css';
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyBfR4wyGRp4lKFuJa81pw1ddaCFVu5c6Wg";
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 const SYSTEM_PROMPT = `You are Ai Sathi (AI साथी), a friendly voice assistant for Amravati city citizens. Keep answers SHORT and conversational (2-3 sentences max). Answer in the same language as the user speaks — Marathi or English. For Marathi use Devanagari script. Be warm and helpful.`;
