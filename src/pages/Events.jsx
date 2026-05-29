@@ -49,12 +49,20 @@ export default function Events() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
+  const [allEvents] = useState(() => {
+    const local = localStorage.getItem('ai_sathi_events');
+    if (local) return JSON.parse(local);
+    localStorage.setItem('ai_sathi_events', JSON.stringify(events));
+    return events;
+  });
+
   // Modal states
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [modalStep, setModalStep] = useState('detail'); // 'detail' | 'form' | 'success'
   const [form, setForm] = useState({ name: '', mobile: '', email: '', people: 1, notes: '' });
   const [formErrors, setFormErrors] = useState({});
   const [shareToast, setShareToast] = useState('');
+  const [paymentToast, setPaymentToast] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentId, setPaymentId] = useState('');
 
@@ -63,7 +71,7 @@ export default function Events() {
     loadRazorpayScript();
   }, []);
 
-  const filtered = events.filter(e => {
+  const filtered = allEvents.filter(e => {
     const matchCat = activeCategory === 'all' || e.category === activeCategory;
     const q = searchQuery.toLowerCase();
     const matchSearch = !q || 
@@ -142,6 +150,13 @@ export default function Events() {
 
     setPaymentId(pid || '');
     setPaymentLoading(false);
+
+    // Show payment transfer toast for 2 seconds (only for paid events)
+    if (pid) {
+      setPaymentToast(true);
+      setTimeout(() => setPaymentToast(false), 2000);
+    }
+
     setModalStep('success');
   };
 
@@ -259,7 +274,12 @@ export default function Events() {
     }
   };
 
-  const detail = selectedEvent ? (eventDetails[selectedEvent.id] || { contact: '+91 9800000000', organizer: 'Event Committee', fee: selectedEvent.price, maxPeople: 5 }) : null;
+  const detail = selectedEvent ? {
+    contact: selectedEvent.contact || (eventDetails[selectedEvent.id]?.contact || '+91 9800000000'),
+    organizer: selectedEvent.organizer || (eventDetails[selectedEvent.id]?.organizer || 'Event Committee'),
+    fee: selectedEvent.price,
+    maxPeople: selectedEvent.maxPeople || (eventDetails[selectedEvent.id]?.maxPeople || 5)
+  } : null;
   const isPaidEvent = selectedEvent && selectedEvent.price !== 'Free' && selectedEvent.price !== '0' && !!selectedEvent.price;
   const totalFee = selectedEvent && isPaidEvent
     ? parseInt(selectedEvent.price.replace(/[^\d]/g, ''), 10) * form.people
@@ -267,10 +287,24 @@ export default function Events() {
 
   return (
     <div className="page-container events-page">
-      {/* Toast */}
+      {/* Share Toast */}
       {shareToast && (
         <div className="share-toast animate-fade-in-up">
           <Share2 size={14} /> {shareToast}
+        </div>
+      )}
+
+      {/* Payment Transfer Toast */}
+      {paymentToast && (
+        <div className="payment-transfer-toast animate-fade-in-up">
+          <span className="payment-toast-icon">✅</span>
+          <span>
+            {language === 'mr'
+              ? 'पेमेंट संबंधित संस्थेला हस्तांतरित केले'
+              : language === 'hi'
+              ? 'भुगतान संबंधित संगठन को स्थानांतरित किया गया'
+              : 'Payment Transferred to the Respected Organization'}
+          </span>
         </div>
       )}
 

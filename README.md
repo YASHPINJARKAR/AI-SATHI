@@ -355,7 +355,7 @@ Create a `.env` file in the root directory with the following variables:
 
 ```env
 # Google Gemini AI API Key (must be an active key with Gemini 3.5 access)
-VITE_GEMINI_API_KEY=AIzaSyBfR4wyGRp4lKFuJa81pw1ddaCFVu5c6Wg
+VITE_GEMINI_API_KEY=AIzaSyAwTmdlb2Ttp-qc80nAWvYd96XsQskrWVE
 ```
 
 > ⚠️ **Never commit your `.env` file to version control.** It is already listed in `.gitignore`.

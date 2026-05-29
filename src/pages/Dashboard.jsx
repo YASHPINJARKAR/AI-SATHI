@@ -78,6 +78,17 @@ const features = [
 export default function Dashboard() {
   const { language } = useLanguage();
   const { user } = useAuth();
+
+  const [allBusinesses] = useState(() => {
+    const local = localStorage.getItem('ai_sathi_businesses');
+    if (local) return JSON.parse(local);
+    return businesses;
+  });
+  const [allEvents] = useState(() => {
+    const local = localStorage.getItem('ai_sathi_events');
+    if (local) return JSON.parse(local);
+    return events;
+  });
   
   const getStatLabel = (key) => {
     const labels = {
@@ -113,7 +124,7 @@ export default function Dashboard() {
     'gym',
     'atm'
   ].map(catId => {
-    const filtered = businesses.filter(b => {
+    const filtered = allBusinesses.filter(b => {
       if (catId === 'education') {
         return b.category === 'school' || b.category === 'college';
       }
@@ -128,7 +139,7 @@ export default function Dashboard() {
     return sorted[0];
   }).filter(Boolean);
 
-  const upcomingEvents = events.slice(0, 3);
+  const upcomingEvents = allEvents.slice(0, 3);
 
   const [feedback, setFeedback] = useState({ rating: 0, view: '', suggestion: '' });
   const [submitted, setSubmitted] = useState(false);

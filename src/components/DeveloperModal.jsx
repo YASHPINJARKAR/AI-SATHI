@@ -61,7 +61,7 @@ export default function DeveloperModal({ isOpen, onClose }) {
         </button>
 
         <div className="dev-modal-header">
-          <h2>Team Sarthi</h2>
+          <h2>Team Drishti</h2>
           <p>Meet the developers behind Ai Sathi</p>
         </div>
 

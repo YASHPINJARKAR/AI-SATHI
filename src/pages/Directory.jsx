@@ -12,8 +12,15 @@ export default function Directory() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [sortBy, setSortBy] = useState('rating');
 
+  const [allBusinesses] = useState(() => {
+    const local = localStorage.getItem('ai_sathi_businesses');
+    if (local) return JSON.parse(local);
+    localStorage.setItem('ai_sathi_businesses', JSON.stringify(businesses));
+    return businesses;
+  });
+
   const filteredBusinesses = useMemo(() => {
-    let filtered = businesses;
+    let filtered = allBusinesses;
     if (activeCategory !== 'all') {
       if (activeCategory === 'education') {
         filtered = filtered.filter(b => b.category === 'school' || b.category === 'college');

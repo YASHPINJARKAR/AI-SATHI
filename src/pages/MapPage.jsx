@@ -85,6 +85,12 @@ export default function MapPage() {
 
   const [locationError, setLocationError] = useState('');
 
+  const [allBusinesses] = useState(() => {
+    const local = localStorage.getItem('ai_sathi_businesses');
+    if (local) return JSON.parse(local);
+    return businesses;
+  });
+
   const amravatiCenter = [20.9320, 77.7523];
 
   const requestLocation = () => {
@@ -181,7 +187,7 @@ export default function MapPage() {
   }, [searchQuery]);
 
   const filtered = useMemo(() => {
-    let list = businesses;
+    let list = allBusinesses;
     if (activeCategory !== 'all') {
       if (activeCategory === 'education') {
         list = list.filter(b => b.category === 'school' || b.category === 'college');

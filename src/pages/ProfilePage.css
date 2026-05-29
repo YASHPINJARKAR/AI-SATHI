@@ -622,6 +622,131 @@
   animation: fadeInUp 0.4s ease-out;
 }
 
+/* ===== Admin CRUD Modal Overlay ===== */
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.admin-modal-card {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  width: 100%;
+  max-width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.admin-modal-card::-webkit-scrollbar {
+  width: 6px;
+}
+.admin-modal-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+.admin-modal-card::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 99px;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.admin-modal-card .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-modal-card .form-group label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ===== Business / Event Status Badges ===== */
+.biz-status {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.biz-status.open {
+  background: rgba(0, 200, 83, 0.12);
+  color: #00875a;
+  border: 1px solid rgba(0, 200, 83, 0.3);
+}
+
+.biz-status.closed {
+  background: rgba(211, 47, 47, 0.1);
+  color: #c62828;
+  border: 1px solid rgba(211, 47, 47, 0.25);
+}
+
+.event-price {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.event-price.free {
+  background: rgba(0, 200, 83, 0.12);
+  color: #00875a;
+  border: 1px solid rgba(0, 200, 83, 0.3);
+}
+
+.event-price.paid {
+  background: rgba(57, 73, 171, 0.1);
+  color: #3949ab;
+  border: 1px solid rgba(57, 73, 171, 0.25);
+}
+
+/* ===== FadeInUp Animation (used by admin-section-block) ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s ease-out;
+}
+
+/* ===== Responsive Modal ===== */
 @media (max-width: 768px) {
   .unified-admin-header {
     flex-direction: column;
@@ -639,5 +764,12 @@
   }
   .admin-header-actions button {
     flex: 1;
+  }
+  .admin-modal-card {
+    padding: 20px;
+    max-height: 95vh;
+  }
+  .admin-modal-card form > div[style*="grid"] {
+    grid-template-columns: 1fr !important;
   }
 }
