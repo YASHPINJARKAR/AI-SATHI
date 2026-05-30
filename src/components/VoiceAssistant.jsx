@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Mic, MicOff, X, Volume2, VolumeX, Loader } from 'lucide-react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useLanguage } from '../LanguageContext';
 import './VoiceAssistant.css';
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyAwTmdlb2Ttp-qc80nAWvYd96XsQskrWVE";
-const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
+const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || "";
+const OPENROUTER_MODEL = import.meta.env.VITE_OPENROUTER_MODEL || "openai/gpt-oss-120b:free";
 
 const SYSTEM_PROMPT = `You are Ai Sathi (AI साथी), a friendly voice assistant for Amravati city citizens. Keep answers SHORT and conversational (2-3 sentences max). Answer in the same language as the user speaks — Marathi or English. For Marathi use Devanagari script. Be warm and helpful.`;
 
@@ -21,7 +20,9 @@ export default function VoiceAssistant({ isOpen, onClose, initialLanguage }) {
   const [detectedLang, setDetectedLang] = useState(lang);
 
   const recognitionRef = useRef(null);
-  const chatRef = useRef(null);
+  const historyRef = useRef([
+    { role: 'system', content: SYSTEM_PROMPT }
+  ]);
   const utteranceRef = useRef(null);
   const voicesRef = useRef([]);
   const visualizerRef = useRef(null);
@@ -64,22 +65,6 @@ export default function VoiceAssistant({ isOpen, onClose, initialLanguage }) {
     };
   }, []);
 
-  // Init Gemini chat
-  useEffect(() => {
-    if (!genAI) return;
-    try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-      chatRef.current = model.startChat({
-        history: [
-          { role: 'user', parts: [{ text: 'System: ' + SYSTEM_PROMPT }] },
-          { role: 'model', parts: [{ text: 'Ready! I am Ai Sathi.' }] },
-        ],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 512 },
-      });
-    } catch (e) {
-      console.error('Gemini init error:', e);
-    }
-  }, []);
 
   const getBestVoice = useCallback((langCode) => {
     const voices = voicesRef.current;
@@ -162,33 +147,56 @@ export default function VoiceAssistant({ isOpen, onClose, initialLanguage }) {
     setErrorMsg('');
 
     try {
-      // Auto-reinit if chat session was lost
-      if (!chatRef.current) {
-        if (!genAI) throw new Error('Gemini not initialized');
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-        chatRef.current = model.startChat({
-          history: [
-            { role: 'user', parts: [{ text: 'System: ' + SYSTEM_PROMPT }] },
-            { role: 'model', parts: [{ text: 'Ready! I am Ai Sathi.' }] },
-          ],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 512 },
-        });
+      if (!OPENROUTER_API_KEY) {
+        throw new Error('OpenRouter API key is missing! Set VITE_OPENROUTER_API_KEY in .env');
       }
 
       const langHint = langCode === 'mr-IN'
         ? ' (CRITICAL: respond ONLY in Marathi using Devanagari script, keep it short)'
         : ' (respond in English, keep it short)';
 
-      const result = await chatRef.current.sendMessage(text + langHint);
-      const res = await result.response;
-      const botText = res.text();
+      const userText = text + langHint;
+      historyRef.current.push({ role: 'user', content: userText });
+
+      const reqBody = {
+        model: OPENROUTER_MODEL,
+        messages: historyRef.current
+      };
+
+      if (OPENROUTER_MODEL.includes('gpt-oss-120b')) {
+        reqBody.reasoning = { enabled: true };
+      }
+
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "http://localhost:5173",
+          "X-Title": "Ai Sathi"
+        },
+        body: JSON.stringify(reqBody)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      const botText = result.choices[0].message.content;
+
+      historyRef.current.push({ role: 'assistant', content: botText });
 
       setResponse(botText);
       // Delay speak slightly to let React re-render first (Chrome async speech fix)
       setTimeout(() => speak(botText, langCode), 150);
     } catch (e) {
       console.error('AI error:', e);
-      // Detect quota/rate-limit errors specifically
+      // Remove last user message if it failed so we don't pollute the history
+      if (historyRef.current[historyRef.current.length - 1]?.role === 'user') {
+        historyRef.current.pop();
+      }
       const msg = (e?.message || '').toLowerCase();
       const isQuota = msg.includes('429') || msg.includes('quota') || msg.includes('resource_exhausted') || e?.status === 429;
       const errText = isQuota
@@ -320,7 +328,7 @@ export default function VoiceAssistant({ isOpen, onClose, initialLanguage }) {
     recognitionRef.current = recognition;
     try {
       recognition.start();
-    } catch (err) {
+    } catch (_err) {
       setStatus('idle');
     }
   }, [detectedLang, askAI, status]);
@@ -329,8 +337,8 @@ export default function VoiceAssistant({ isOpen, onClose, initialLanguage }) {
     if (recognitionRef.current) {
       try {
         recognitionRef.current.abort();
-      } catch (err) {
-        console.error("Error aborting recognition:", err);
+      } catch (_err) {
+        console.error("Error aborting recognition:", _err);
       }
       recognitionRef.current = null;
     }
@@ -367,6 +375,9 @@ export default function VoiceAssistant({ isOpen, onClose, initialLanguage }) {
     setTranscript('');
     setResponse('');
     setErrorMsg('');
+    historyRef.current = [
+      { role: 'system', content: SYSTEM_PROMPT }
+    ];
     onClose();
   }, [onClose, cleanupAudio]);
 

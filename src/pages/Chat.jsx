@@ -1,16 +1,15 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Send, Mic, MicOff, Sparkles, Clock, Volume2, Bot, User, RefreshCw, Wifi, WifiOff, Image, X } from 'lucide-react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { quickActions } from '../data/mockData';
 import { useLanguage } from '../LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import './Chat.css';
 
-// ── Gemini AI Setup ──────────────────────────────────────────────
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyAwTmdlb2Ttp-qc80nAWvYd96XsQskrWVE";
-const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
-const GEMINI_MODEL = 'gemini-2.5-flash'; // Stable free-tier model supporting generateContent
+// ── OpenRouter AI Setup ──────────────────────────────────────────
+const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || "";
+const OPENROUTER_MODEL = import.meta.env.VITE_OPENROUTER_MODEL || "openai/gpt-oss-120b:free";
+const OPENROUTER_VISION_MODEL = import.meta.env.VITE_OPENROUTER_VISION_MODEL || "google/gemini-2.5-flash";
 
 
 const SYSTEM_PROMPT = `You are **Ai Sathi** (AI साथी), a smart, friendly, and helpful digital assistant built specifically for the citizens of **Amravati city, Maharashtra, India**, but capable of answering any question from the user.
@@ -124,7 +123,6 @@ export default function Chat() {
   const [isConnected, setIsConnected] = useState(true);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-  const chatRef = useRef(null);
   const handleSendRef = useRef(null); // keeps toggleVoice closure fresh
   const recognitionRef = useRef(null);
 
@@ -159,29 +157,15 @@ export default function Chat() {
     });
   }, [language, getWelcomeText]);
 
-  // ── Initialize Gemini Chat Session ────────────────────────────
+  // ── Initialize OpenRouter Connection Status ───────────────────
   useEffect(() => {
-    if (!genAI) {
-      console.error('Gemini API key is missing! Set VITE_GEMINI_API_KEY in .env');
+    if (!OPENROUTER_API_KEY) {
+      console.error('OpenRouter API key is missing! Set VITE_OPENROUTER_API_KEY in .env');
       setIsConnected(false);
       return;
     }
-    try {
-      const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
-      const chat = model.startChat({
-        history: [
-          { role: 'user', parts: [{ text: 'System instructions: ' + SYSTEM_PROMPT }] },
-          { role: 'model', parts: [{ text: 'Understood! I am Ai Sathi, ready to help the citizens of Amravati and answer any question. How can I help you today? 😊' }] },
-        ],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
-      });
-      chatRef.current = chat;
-      setIsConnected(true);
-      console.log('✅ Gemini API connected successfully using model:', GEMINI_MODEL);
-    } catch (err) {
-      console.error('❌ Failed to initialize Gemini:', err);
-      setIsConnected(false);
-    }
+    setIsConnected(true);
+    console.log('✅ OpenRouter API configured successfully using model:', OPENROUTER_MODEL);
   }, []);
 
   // ── Auto-scroll ───────────────────────────────────────────────
@@ -254,22 +238,11 @@ export default function Chat() {
     }
   };
 
-  // ── Get AI Response via Gemini SDK ────────────────────────────
-  const getAIResponse = async (query, base64Image = null) => {
+  // ── Get AI Response via OpenRouter API ─────────────────────────
+  const getAIResponse = async (query, base64Image = null, history = []) => {
     try {
-      if (!chatRef.current) {
-        if (!genAI) {
-          throw new Error('Gemini API key is missing! Set VITE_GEMINI_API_KEY in .env');
-        }
-        const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
-        const chat = model.startChat({
-          history: [
-            { role: 'user', parts: [{ text: 'System instructions: ' + SYSTEM_PROMPT }] },
-            { role: 'model', parts: [{ text: 'Understood! I am Ai Sathi, ready to help the citizens of Amravati and answer any question. How can I help you today? 😊' }] },
-          ],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
-        });
-        chatRef.current = chat;
+      if (!OPENROUTER_API_KEY) {
+        throw new Error('OpenRouter API key is missing! Set VITE_OPENROUTER_API_KEY in .env');
       }
 
       const langHint = language === 'mr'
@@ -279,31 +252,85 @@ export default function Chat() {
           : ' (Please respond entirely in English.)';
       const fullQuery = query + langHint;
 
-      let result;
+      const apiMessages = [
+        {
+          role: 'system',
+          content: SYSTEM_PROMPT
+        }
+      ];
+
+      // Build history
+      history.forEach(msg => {
+        if (msg.id === 1) return; // Skip welcome message
+        const role = msg.type === 'bot' ? 'assistant' : 'user';
+        if (msg.image) {
+          apiMessages.push({
+            role,
+            content: [
+              { type: 'text', text: msg.text },
+              { type: 'image_url', image_url: { url: msg.image } }
+            ]
+          });
+        } else {
+          apiMessages.push({
+            role,
+            content: msg.text
+          });
+        }
+      });
+
+      // Add user query
       if (base64Image) {
-        const base64Data = base64Image.split(',')[1];
-        const mimeType = base64Image.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)[1];
-
-        const imagePart = {
-          inlineData: {
-            data: base64Data,
-            mimeType: mimeType
-          }
-        };
-
-        const parts = [fullQuery || "What is in this image?", imagePart];
-        result = await chatRef.current.sendMessage(parts);
+        apiMessages.push({
+          role: 'user',
+          content: [
+            { type: 'text', text: fullQuery },
+            { type: 'image_url', image_url: { url: base64Image } }
+          ]
+        });
       } else {
-        result = await chatRef.current.sendMessage(fullQuery);
+        apiMessages.push({
+          role: 'user',
+          content: fullQuery
+        });
       }
 
-      const response = await result.response;
-      const text = response.text();
+      // Check if any message contains an image to route to the vision model
+      const hasImage = base64Image || history.some(msg => msg.image);
+      const targetModel = hasImage ? OPENROUTER_VISION_MODEL : OPENROUTER_MODEL;
+
+      const reqBody = {
+        model: targetModel,
+        messages: apiMessages
+      };
+
+      if (!hasImage && targetModel.includes('gpt-oss-120b')) {
+        reqBody.reasoning = { enabled: true };
+      }
+
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "http://localhost:5173",
+          "X-Title": "Ai Sathi"
+        },
+        body: JSON.stringify(reqBody)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      const text = result.choices[0].message.content;
 
       setIsConnected(true);
       return text;
     } catch (error) {
-      console.error('Gemini API error:', error);
+      console.error('OpenRouter API error:', error);
       setIsConnected(false);
       return language === 'mr'
         ? '⚠️ माफ करा, AI सेवेशी जोडणी करताना अडचण आली. कृपया पुन्हा प्रयत्न करा.'
@@ -333,7 +360,7 @@ export default function Chat() {
       setSelectedImage(null);
       setIsTyping(true);
 
-      const responseText = await getAIResponse(messageText, currentImage);
+      const responseText = await getAIResponse(messageText, currentImage, messages);
 
       const botMsg = { id: Date.now() + 1, type: 'bot', text: responseText, timestamp: new Date() };
       setMessages(prev => [...prev, botMsg]);
@@ -501,22 +528,6 @@ export default function Chat() {
       }
     ]);
 
-    // Reinitialize Gemini chat session
-    if (genAI) {
-      try {
-        const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
-        const chat = model.startChat({
-          history: [
-            { role: 'user', parts: [{ text: 'System instructions: ' + SYSTEM_PROMPT }] },
-            { role: 'model', parts: [{ text: 'Understood! I am Ai Sathi, ready to help. 😊' }] },
-          ],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
-        });
-        chatRef.current = chat;
-      } catch (err) {
-        console.error('Failed to reinitialize Gemini:', err);
-      }
-    }
     setIsConnected(true);
   };
 
@@ -589,7 +600,7 @@ export default function Chat() {
             <p className="chat-subtitle">
               <span className={`status-dot ${isConnected ? 'connected' : 'disconnected'}`}></span>
               {isConnected
-                ? (language === 'mr' ? 'Gemini AI शी जोडलेले • लाइव्ह' : language === 'hi' ? 'Gemini AI से जुड़ा हुआ • लाइव' : 'Connected to Gemini AI • Live')
+                ? (language === 'mr' ? 'OpenRouter AI शी जोडलेले • लाइव्ह' : language === 'hi' ? 'OpenRouter AI से जुड़ा हुआ • लाइव' : 'Connected to OpenRouter AI • Live')
                 : (language === 'mr' ? 'ऑफलाइन' : language === 'hi' ? 'ऑफलाइन' : 'Disconnected')
               }
             </p>
@@ -779,7 +790,7 @@ export default function Chat() {
           </button>
         </div>
         <p className="chat-powered-by">
-          ⚡ {language === 'mr' ? 'Google Gemini AI द्वारे संचालित' : language === 'hi' ? 'Google Gemini AI द्वारा संचालित' : 'Powered by Google Gemini AI'}
+          ⚡ {language === 'mr' ? 'OpenRouter AI द्वारे संचालित' : language === 'hi' ? 'OpenRouter AI द्वारा संचालित' : 'Powered by OpenRouter AI'}
         </p>
       </div>
     </div>

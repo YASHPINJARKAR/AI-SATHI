@@ -30,3 +30,6 @@ scratch/
 .env
 .env.*
 !.env.example
+
+.env
+test-gemini.js
