@@ -1,0 +1,396 @@
+/* ===== Voice Assistant Overlay ===== */
+.va-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 0 0 0;
+  animation: vaOverlayIn 0.25s ease;
+}
+
+@keyframes vaOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.va-panel {
+  background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 60%, #0f172a 100%);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 28px 28px 0 0;
+  width: 100%;
+  max-width: 520px;
+  padding: 28px 24px 32px;
+  box-shadow: 0 -8px 40px rgba(99, 102, 241, 0.2), 0 0 80px rgba(139, 92, 246, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 92dvh;
+  overflow-y: auto;
+}
+
+/* ─── Header ─────────────────────────────── */
+.va-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.va-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.va-orb-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #a5b4fc, #6366f1 55%, #4f46e5);
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.5);
+  flex-shrink: 0;
+  animation: vaOrbPulse 3s ease-in-out infinite;
+}
+
+@keyframes vaOrbPulse {
+  0%, 100% { box-shadow: 0 0 16px rgba(99, 102, 241, 0.5); transform: scale(1); }
+  50%       { box-shadow: 0 0 28px rgba(99, 102, 241, 0.8); transform: scale(1.06); }
+}
+
+.va-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.va-subtitle {
+  font-size: 0.78rem;
+  color: #a5b4fc;
+  margin: 2px 0 0;
+}
+
+.va-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.va-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: #a5b4fc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.va-icon-btn:hover {
+  background: rgba(99, 102, 241, 0.3);
+  color: #e2e8f0;
+}
+
+.va-close-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.va-close-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fee2e2;
+}
+
+/* ─── Language Switcher ──────────────────── */
+.va-lang-switcher {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.va-lang-btn {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.va-lang-btn.active,
+.va-lang-btn:hover {
+  background: rgba(99, 102, 241, 0.3);
+  border-color: rgba(99, 102, 241, 0.5);
+  color: #e2e8f0;
+}
+
+.va-lang-btn.active {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+/* ─── Main Visual / Mic Button ───────────── */
+.va-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0 4px;
+}
+
+.va-robot-ring {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.va-robot-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  animation: vaRingRotate 4s linear infinite;
+}
+
+.va-robot-ring.listening::before {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #10b981, #06d6a0, #059669) border-box;
+  animation: vaRingRotate 1.5s linear infinite;
+}
+
+.va-robot-ring.speaking::before {
+  background: linear-gradient(135deg, #f59e0b, #fb923c, #ef4444) border-box;
+  animation: vaRingRotate 2s linear infinite;
+}
+
+@keyframes vaRingRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.va-robot-inner {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.3s ease, background 0.3s ease;
+  box-shadow: inset 0 0 20px rgba(99, 102, 241, 0.15);
+  will-change: transform;
+}
+
+.va-robot-inner.listening {
+  box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.4), 0 0 40px rgba(16, 185, 129, 0.4);
+}
+
+.va-robot-inner.speaking {
+  box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.2), 0 0 30px rgba(245, 158, 11, 0.15);
+}
+
+.va-mic-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+}
+
+.va-mic-btn:hover {
+  transform: scale(1.06);
+  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.6);
+}
+
+.va-mic-btn:active {
+  transform: scale(0.96);
+}
+
+.va-mic-btn.listening {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5), 0 0 40px rgba(16, 185, 129, 0.2);
+  animation: vaMicPulse 1.2s ease-in-out infinite;
+}
+
+.va-mic-btn.thinking {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  cursor: not-allowed;
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+}
+
+.va-mic-btn.speaking {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+}
+
+.va-mic-btn.error {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+@keyframes vaMicPulse {
+  0%, 100% { transform: scale(1);    box-shadow: 0 8px 24px rgba(16,185,129,0.5), 0 0 0 0 rgba(16,185,129,0); }
+  50%       { transform: scale(1.08); box-shadow: 0 12px 32px rgba(16,185,129,0.6), 0 0 0 12px rgba(16,185,129,0); }
+}
+
+.va-spin {
+  animation: vaSpin 1s linear infinite;
+}
+
+@keyframes vaSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.va-prompt {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  text-align: center;
+  margin: 0;
+  min-height: 1.4em;
+  transition: all 0.3s ease;
+}
+
+/* ─── Transcript ─────────────────────────── */
+.va-transcript {
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.va-transcript-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6366f1;
+}
+
+.va-transcript-text {
+  font-size: 0.95rem;
+  color: #e2e8f0;
+  margin: 6px 0 0;
+  line-height: 1.5;
+}
+
+/* ─── Response ───────────────────────────── */
+.va-response {
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.va-response-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #a78bfa;
+}
+
+.va-response-text {
+  font-size: 0.95rem;
+  color: #e2e8f0;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.va-replay-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: #a78bfa;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-start;
+}
+
+.va-replay-btn:hover {
+  background: rgba(139, 92, 246, 0.35);
+  color: #c4b5fd;
+}
+
+/* ─── Error ──────────────────────────────── */
+.va-error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.va-error p {
+  font-size: 0.88rem;
+  color: #fca5a5;
+  margin: 0;
+}
+
+/* ─── Footer ─────────────────────────────── */
+.va-footer {
+  text-align: center;
+  font-size: 0.78rem;
+  color: #475569;
+  margin: 0;
+}
+
+/* ─── Responsive (Desktop center modal) ──── */
+@media (min-width: 600px) {
+  .va-overlay {
+    align-items: center;
+  }
+
+  .va-panel {
+    border-radius: 28px;
+    max-height: 85vh;
+  }
+}
+
+@media (max-width: 400px) {
+  .va-panel {
+    padding: 20px 16px 28px;
+  }
+
+  .va-robot-ring { width: 120px; height: 120px; }
+  .va-robot-inner { width: 100px; height: 100px; }
+  .va-mic-btn { width: 68px; height: 68px; }
+}
